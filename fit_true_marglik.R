@@ -1,9 +1,9 @@
 # simulate from the Gaussian mixture model with known proportions and variances
 # and compute the marginal likelihood estimators
 rm(list=ls())
-if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
-  setwd("thames_mixtures")
-}
+#if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
+#  setwd("thames_mixtures")
+#}
 source("functions/galaxies_funcs_squares.R")
 source("functions/true_marglik_funcs.R")          
 #source("functions/thames_gmm_funcs.R")
@@ -16,6 +16,7 @@ n = 10
 rho = c(0,0.5,1)
 iters = 10000
 offset = 4
+par(mfrow=c(1,1))
 
 # setting 1: true model (fitted G=2, true G=2)
 results_G2 = thames_pipeline(num_sims=50, 
@@ -143,10 +144,10 @@ results_G3 = thames_pipeline(num_sims=50,
                                                                                                 taustars=c(2/6,1/6,3/6),
                                                                                                 init,2*iters, name="truemodel_G3_rho1",seed=seed)))
 
-save(results_G2,file=paste0('data/res_sim1_G2','.Rda'))
-save(results_underfitting,file=paste0('data/res_sim1_underfitting','.Rda'))
-save(results_overfitting,file=paste0('data/res_sim1_overfitting','.Rda'))
-save(results_G3,file=paste0('data/res_sim1_G3','.Rda'))
+# save(results_G2,file=paste0('data/res_sim1_G2','.Rda'))
+# save(results_underfitting,file=paste0('data/res_sim1_underfitting','.Rda'))
+# save(results_overfitting,file=paste0('data/res_sim1_overfitting','.Rda'))
+# save(results_G3,file=paste0('data/res_sim1_G3','.Rda'))
 
 write.csv(data.frame(lapply(results_G2$df_output,
                             as.character), stringsAsFactors=FALSE),

@@ -1,9 +1,9 @@
 # Fit the THAMES, fitted to the galaxies, enzyme, and acidity datasets
 rm(list=ls())
 
-if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
-  setwd("thames_mixtures")
-}
+#if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
+#  setwd("thames_mixtures")
+#}
 
 library(ggplot2)
 library(gridExtra)
@@ -27,33 +27,34 @@ lml_thames_galaxies <- data.frame(G = 2:6,
                                   lml = sapply(2:6, function(s) median(df_galaxies[(df_galaxies$sampler=="JAGS")&
                                                                   (df_galaxies$relabalg=="ECR")&
                                                                   (df_galaxies$ellipsealg=="standard")&
-                                                                  (df_galaxies$thamesalg=="permutations")&
+                                                                  (df_galaxies$thamesalg=="simple")&
                                                                   (df_galaxies$estimate=="estim")&
                                                                     df_galaxies$G==paste0(s),]$value)),
                                   lower = sapply(2:6, function(s) quantile(df_galaxies[(df_galaxies$sampler=="JAGS")&
                                                                                        (df_galaxies$relabalg=="ECR")&
                                                                                        (df_galaxies$ellipsealg=="standard")&
-                                                                                       (df_galaxies$thamesalg=="permutations")&
+                                                                                       (df_galaxies$thamesalg=="simple")&
                                                                                        (df_galaxies$estimate=="estim")&
                                                                                        df_galaxies$G==paste0(s),]$value,0.025)),
                                   upper = sapply(2:6, function(s) quantile(df_galaxies[(df_galaxies$sampler=="JAGS")&
                                                                                          (df_galaxies$relabalg=="ECR")&
                                                                                          (df_galaxies$ellipsealg=="standard")&
-                                                                                         (df_galaxies$thamesalg=="permutations")&
+                                                                                         (df_galaxies$thamesalg=="simple")&
                                                                                          (df_galaxies$estimate=="estim")&
                                                                                          df_galaxies$G==paste0(s),]$value,1-0.025)))
   
-lml_true_galaxies <- data.frame(G = 2:6, lml = c(-235.37,-226.85,-226.11,-225.83,-225.75),
+
+lml_true_galaxies <- data.frame(G = 2:6, lml = c(-235.4,-226.9,-226.2,-225.9,-225.9),
                                 y_higher=-222.091, y_lower=-240)
-lml_ISF_galaxies  <- data.frame(G = 2:6, lml = c(-235.37,-226.85,-226.11,-225.93,-226.10),
+lml_ISF_galaxies  <- data.frame(G = 2:6, lml = c(-235.4,-226.9,-226.2,-226.0,-226.10),
                                y_higher=-222.091, y_lower=-240)
-lml_ISR_galaxies  <- data.frame(G = 2:6, lml = c(-235.37,-226.85,-226.11,-225.93,-224.91),
+lml_ISR_galaxies  <- data.frame(G = 2:6, lml = c(-235.4,-227.0,-226.2,-226.0,-225.0),
                                y_higher=-222.091, y_lower=-240)
-lml_BSR_galaxies  <- data.frame(G = 2:6, lml = c(-235.37,-226.85,-226.27,-227.20,-230.00),
+lml_BSR_galaxies  <- data.frame(G = 2:6, lml = c(-235.4,-226.9,-226.3,-227.2,-230.0),
                                y_higher=-222.091, y_lower=-240)
-lml_RIF_galaxies  <- data.frame(G = 2:6, lml = c(-235.37,-227.62,-226.35,-226.18,-229.57),
+lml_RIF_galaxies  <- data.frame(G = 2:6, lml = c(-235.3,-227.6,-226.4,-226.2,-229.6),
                                y_higher=-222.091, y_lower=-240)
-lml_RIR_galaxies  <- data.frame(G = 2:6, lml = c(-235.37,-227.03,-227.54,-230.00,-235.93),
+lml_RIR_galaxies  <- data.frame(G = 2:6, lml = c(-235.4,-227.0,-227.5,-230.1,-236.0),
                                y_higher=-222.091, y_lower=-240)
 
 # Celeux et al. (2018) enzyme data results
@@ -62,53 +63,53 @@ lml_RIR_galaxies  <- data.frame(G = 2:6, lml = c(-235.37,-227.03,-227.54,-230.00
 lml_thames_enzyme <- data.frame(G = 2:6, lml = sapply(2:6, function(s) median(df_enzymes[(df_enzymes$sampler=="JAGS")&
                                                                                            (df_enzymes$relabalg=="ECR")&
                                                                                            (df_enzymes$ellipsealg=="standard")&
-                                                                                           (df_enzymes$thamesalg=="permutations")&
+                                                                                           (df_enzymes$thamesalg=="simple")&
                                                                                            (df_enzymes$estimate=="estim")&
                                                                                            (df_enzymes$G==paste0(s)),]$value)),
                                 lower = sapply(2:6, function(s) quantile(df_enzymes[(df_enzymes$sampler=="JAGS")&
                                                                                     (df_enzymes$relabalg=="ECR")&
                                                                                     (df_enzymes$ellipsealg=="standard")&
-                                                                                    (df_enzymes$thamesalg=="permutations")&
+                                                                                    (df_enzymes$thamesalg=="simple")&
                                                                                     (df_enzymes$estimate=="estim")&
                                                                                     (df_enzymes$G==paste0(s)),]$value,0.025)),
                                 upper = sapply(2:6, function(s) quantile(df_enzymes[(df_enzymes$sampler=="JAGS")&
                                                                                       (df_enzymes$relabalg=="ECR")&
                                                                                       (df_enzymes$ellipsealg=="standard")&
-                                                                                      (df_enzymes$thamesalg=="permutations")&
+                                                                                      (df_enzymes$thamesalg=="simple")&
                                                                                       (df_enzymes$estimate=="estim")&
                                                                                       (df_enzymes$G==paste0(s)),]$value,1-0.025)))
 
-lml_true_enzyme <- data.frame(G = 2:6, lml = c(-76.5,-74.2,-74.3,-75,-76.7),
+lml_true_enzyme <- data.frame(G = 2:6, lml = c(-76.6,-74.2,-74.3,-75,-76.8),
                               y_higher=-73, y_lower=-90)
-lml_ISF_enzyme <- data.frame(G = 2:6, lml = c(-76.5,-74.2,-74.3,-75.16,-77.37),
+lml_ISF_enzyme <- data.frame(G = 2:6, lml = c(-76.6,-74.2,-74.3,-75.3,-77.5),
                               y_higher=-73, y_lower=-90)
-lml_ISR_enzyme <- data.frame(G = 2:6, lml = c(-76.5,-73.89,-73.89,-75.25,-79.66),
+lml_ISR_enzyme <- data.frame(G = 2:6, lml = c(-76.6,-74.1,-74.0,-75.3,-79.8),
                              y_higher=-73, y_lower=-90)
-lml_BSR_enzyme <- data.frame(G = 2:6, lml = c(-76.5,-74.2,-74.74,-79.32,-84.49),
+lml_BSR_enzyme <- data.frame(G = 2:6, lml = c(-76.6,-74.2,-74.9,-79.4,-84.6),
                              y_higher=-73, y_lower=-90)
-lml_RIF_enzyme <- data.frame(G = 2:6, lml = c(-76.5,-74.2,-75.08,-79.15,-82.28),
+lml_RIF_enzyme <- data.frame(G = 2:6, lml = c(-76.6,-74.2,-75.2,-79.3,-82.4),
                              y_higher=-73, y_lower=-90)
-lml_RIR_enzyme <- data.frame(G = 2:6, lml = c(-76.5,-74.2,-77.71,-83.72,-89.06),
+lml_RIR_enzyme <- data.frame(G = 2:6, lml = c(-76.6,-74.3,-77.8,-83.9,-89.1),
                              y_higher=-73, y_lower=-90)
 
 # Celeux et al. (2018) acidity data results
 lml_thames_acidity <- data.frame(G=2:6, lml = sapply(2:6, function(s) median(df_acidity[(df_acidity$sampler=="JAGS")&
                                                                                           (df_acidity$relabalg=="ECR")&
                                                                                           (df_acidity$ellipsealg=="standard")&
-                                                                                          (df_acidity$thamesalg=="permutations")&
+                                                                                          (df_acidity$thamesalg=="simple")&
                                                                                           (df_acidity$estimate=="estim")&(df_acidity$G==paste0(s)),]$value)))
 
-lml_true_acidity <- data.frame(G = 2:6, lml = c(-199.4,-198.2,-198.3,-199.0,-200.1),
+lml_true_acidity <- data.frame(G = 2:6, lml = c(-199.4,-198.2,-198.3,-198.9,-200.0),
                                y_lower=-216.988,y_higher=-194.064)
-lml_ISF_acidity <- data.frame(G = 2:6, lml = c(-199.4,-198.2,-198.26,-200.0,-200.54),
+lml_ISF_acidity <- data.frame(G = 2:6, lml = c(-199.4,-198.2,-198.5,-200.0,-200.6),
                                y_lower=-216.988,y_higher=-194.064)
-lml_ISR_acidity <- data.frame(G = 2:6, lml = c(-199.4,-198.2,-198.58,-198.26,-197.17),
+lml_ISR_acidity <- data.frame(G = 2:6, lml = c(-199.4,-198.3,-198.7,-198.4,-197.3),
                                y_lower=-216.988,y_higher=-194.064)
-lml_BSR_acidity <- data.frame(G = 2:6, lml = c(-199.4,-198.2,-199.02,-203.47,-207.5),
+lml_BSR_acidity <- data.frame(G = 2:6, lml = c(-199.4,-198.3,-199.3,-203.5,-207.4),
                                y_lower=-216.988,y_higher=-194.064)
-lml_RIF_acidity <- data.frame(G = 2:6, lml = c(-199.4,-198.2,-199.45,-201.95,-205.65),
+lml_RIF_acidity <- data.frame(G = 2:6, lml = c(-199.4,-198.3,-199.6,-201.9,-205.6),
                                y_lower=-216.988,y_higher=-194.064)
-lml_RIR_acidity <- data.frame(G = 2:6, lml = c(-199.4,-198.36,-201.95,-207.28,-213.69),
+lml_RIR_acidity <- data.frame(G = 2:6, lml = c(-199.5,-198.6,-202.1,-207.2,-213.5),
                                y_lower=-216.988,y_higher=-194.064)
 
 # graphical parameters
@@ -344,8 +345,10 @@ df_galaxies_1sim[df_galaxies_1sim$estimate=="permlen",]$value/factorial(2:15)
 
 igraphs = list()
 #library(ig2gg)
-par(mfrow=c(2,7))
 
+pdf(file="atelier/galaxies_overlapgraphs_full.pdf",width = 8, height = 3.5)
+par(mfrow=c(2,7))
+set.seed(7) # to control the graph layout
 for(i in 1:14){
   par(mai=c(0,0,0,0))
   V(graphs[[i]])$color = rep("white",length(V(graphs[[i]])$color))
@@ -357,20 +360,4 @@ for(i in 1:14){
   text(-1,1,LETTERS[i],xpd=TRUE,cex=1.5)
   abline(v=1.1)
 }
-
-graph_example_01 = graph_from_adjacency_matrix(diag(2))
-
-# library(igraph)
-# g <- make_ring(1, directed = TRUE)
-# g[1]=0
-# al <- as_adj_list(g, mode = "out")
-# g2 <- graph_from_adj_list(al)
-# V(g2)$color="white"
-# V(g2)$label=" "
-# 
-# pdf("atelier/galaxies_overlapgraph_G1.pdf")
-# plot(g2)
-# dev.off()
-# 
-# which.max(results_galaxies_1sim$df_output[results_galaxies_1sim$df_output$estimate=="estim",]$value)
-
+dev.off()

@@ -464,6 +464,7 @@ compute_thames = function(ellipse,params,lps,G,iters,type,logpost,num_R,seed=202
   # TODO: fix this
   # browser()
   c_opt_old = c_opt
+  center = NULL
   while(is.infinite(log_cor) & in_ellipse){
     #browser()
     c_opt = c_opt_old / 2^counter
@@ -494,34 +495,44 @@ compute_thames = function(ellipse,params,lps,G,iters,type,logpost,num_R,seed=202
       c_opt = sqrt(ncol(params)+1)
       log_cor = -Inf
       counter = 0
+      center = t(sims[(iters+1):(2*iters),,-dim(sims)[3]][which.max(lps[(iters+1):(2*iters)]),,])
     }
     
-    if(type=="simple"){
-      #browser()
-      if(c_opt_old == c_opt){
-        scaling = get_lda_scaling(G,sims[(iters+1):(2*iters),,])
-      }
-      #browser()
-      graph_and_non_I_set = calc_non_I_set(scaling, G, sims_test, num_R, c_opt)
-      scaling$non_I_set = graph_and_non_I_set$non_I_set
-      if(c_opt_old == c_opt){
-        graph = graph_and_non_I_set$graph
-      }
-      #print(graph_and_non_I_set$complexity_limit_estim)
-      #browser()
-      
-      # the set has to include at least two components
-      if((length(scaling$non_I_set)==(G-1))){
-        graph_and_non_I_set$complexity_limit_estim = factorial(G)
-        scaling$non_I_set = scaling$non_I_set[-1]
-      }
-      
-      if((graph_and_non_I_set$complexity_limit_estim>1000000)){
+    if(!empty_ellipse){
+      if(type=="simple"){
         #browser()
-        log_cor = -Inf
+        
+        # only take the sample within the ellipse if the mean had to be reset
+        if(is.null(center)){
+          scaling = get_lda_scaling(G,sims[(iters+1):(2*iters),,],center=center)
+        } else{
+          if(sum(in_E)!=1){
+            scaling = get_lda_scaling(G,sims[(iters+1):(2*iters),,][in_E,,])
+          } else{
+            scaling = list(meanhat=center,sigmahat=lapply(1:G,function(g) (1e-10)*diag(nrow(center))))
+          }
+        }
+        
+        graph_and_non_I_set = calc_non_I_set(scaling, G, sims_test, num_R, c_opt)
+        scaling$non_I_set = graph_and_non_I_set$non_I_set
+        if(c_opt_old == c_opt){
+          graph = graph_and_non_I_set$graph
+        }
+        #print(graph_and_non_I_set$complexity_limit_estim)
+        #browser()
+        
+        # the set has to include at least two components
+        if((length(scaling$non_I_set)==(G-1))){
+          graph_and_non_I_set$complexity_limit_estim = factorial(G)
+          scaling$non_I_set = scaling$non_I_set[-1]
+        }
+        
+        if((graph_and_non_I_set$complexity_limit_estim>50000)){
+          #browser()
+          log_cor = -Inf
+        }
       }
     }
-    
   }
   #browser()
   #plot(5000:n_simuls,log(cumsum(lps_test>limit)[(5000:n_simuls)]/(5000:n_simuls)))
@@ -550,99 +561,38 @@ compute_thames = function(ellipse,params,lps,G,iters,type,logpost,num_R,seed=202
     
     param_test_f_transform = matrix(reorder_by_lda(scaling, G, sims_test)$W,ncol=G)
     
-    ### BEGIN TODO REMOVE ? ###
-    #browser()
     graphmat = graph_and_non_I_set$graphmat
     delta_mat = matrix(0,nrow=nrow(graphmat),ncol=ncol(graphmat))
     for(g1 in 1:(nrow(delta_mat)-1)){
       for(g2 in (g1+1):(nrow(delta_mat))){
         delta_mat[g1,g2] = (mean(param_test_f_transform[,g1] < param_test_f_transform[,g2]) == 1)
+        ### BEGIN TODO REMOVE ###
+        delta_mat[g2,g1] = (mean(param_test_f_transform[,g2] < param_test_f_transform[,g1]) == 1)        
+        ### END TODO REMOVE ###
       }
     }
+    # browser()
     delta_mat = delta_mat * (1-graph_and_non_I_set$graphmat)
 
     adj_matrix = delta_mat
-    adj_list <- lapply((1:nrow(adj_matrix))[rowSums(adj_matrix)>0], function(i) c(i,which(adj_matrix[i, ] == 1)))
+    adj_list = matrix(1:2,nrow=1)
+    for(g1 in (1:nrow(adj_matrix))[rowSums(adj_matrix)>0]){
+      for(g2 in which(adj_matrix[g1, ] == 1)){
+        adj_list = rbind(adj_list,c(g1,g2))
+      }
+    }
+    #browser()
+    
+    if(nrow(adj_list)>1){
+      adj_list = lapply(2:nrow(adj_list), function(l) adj_list[l,])      
+    } else{
+      adj_list = list()
+    }
+
     #browser()
     perms = alltopsorts_recursion(G, adj_list)
     gc()
     rm()
-    ### END TODO REMOVE ? ###
-    
-    # theta_hat_f_transform = reorder_by_lda(scaling,G,sims_theta_hat_extended)$W
-    # sort_indices = sort(theta_hat_f_transform, index.return=TRUE)$ix
-    # #browser()
-    # param_test_f_transform_sorted = param_test_f_transform[,sort_indices]
-    # ranges = apply(param_test_f_transform_sorted,2,range)
-    # 
-    # #browser()
-    # log_len_perm_estim = sum(log(sapply(sapply(1:G, function(s) ranges[2,s]<=ranges[1,s:G]),function(t) sum(!t))))
-    # 
-    # params_f_transform = param_test_f_transform#reorder_by_lda(params, scaling, G)
-    # params_sorted = param_test_f_transform_sorted#params_f_transform[,sort_indices]
-    # 
-    # len_perm_estim_func = Vectorize(function(complexity_limit, return_ranges=FALSE){
-    #   
-    #   # TODO PUT BACK ?
-    #   #param_ranges = apply(params_sorted[1:iters,],2,function(param) mean(param)+sd(param)*c(-complexity_limit,complexity_limit))
-    #   
-    #   param_ranges = apply(params_sorted,2,function(param) mean(param)+sd(param)*c(-complexity_limit,complexity_limit))
-    #   
-    #   param_ranges[1,] = sapply(1:G, function(s) max(param_ranges[1,s], ranges[1,s]))
-    #   param_ranges[2,] = sapply(1:G, function(s) min(param_ranges[2,s], ranges[2,s]))
-    #   # any ranges more spread out than the range of the Monte Carlo sample make no sense
-    #   
-    #   log_len_perm_estim = sum(log(sapply(sapply(1:G, function(s) param_ranges[2,s]<=param_ranges[1,s:G]),function(t) sum(!t))))
-    #   if(return_ranges){
-    #     return(param_ranges)
-    #   } else{
-    #     return(log_len_perm_estim)
-    #   }
-    # })
-    # complexity_limits = (1:100)/10
-    # #browser()
-    # lens = len_perm_estim_func(complexity_limits)
-    # if(max(lens)>10){
-    #   select_max = which((lens*(lens<10)) == max((lens*(lens<10)), na.rm = TRUE))
-    #   ranges = matrix(len_perm_estim_func(complexity_limits[select_max[length(select_max)]],return_ranges=TRUE),nrow=2)
-    # }
-    # 
-    # counter=0
-    # perms = list()
-    # for(i in 1:G){
-    #   counter = counter + 1
-    #   perms[[counter]] = c(i)
-    # }
-    # #browser()
-    # G_size = 1
-    # while(length(perms[[1]])<G){
-    #   perm_length_old = length(perms)
-    #   counter = perm_length_old
-    #   for(perm in perms){
-    #     successors = (1:G)[-perm]
-    #     successors = successors[!sapply(successors, function(s) sum(ranges[2,s]<ranges[1,perm])>=1)]
-    #     if(length(successors)!=0){
-    #       for(k in successors){
-    #         counter = counter + 1
-    #         perms[[counter]] = c(perm,k)
-    #       }
-    #     }
-    #   }
-    #   #browser()
-    #   G_size = G_size + 1
-    #   delete = sapply(perms,function(perm) length(perm)<G_size)
-    #   perms[delete] = NULL # remove the old sample
-    #   if(length(perms)>factorial(10)){
-    #     perms = perms[1:factorial(10)] # number of perms could be too high
-    #     print("WARNING: Number of permutations larger than 10 factorial!")
-    #   }
-    # }
-    # if(length(perms)==0){
-    #   browser()
-    # }
-    # if(length(perms[[1]])==1){
-    #   perms = list(perms) # this is if the list of permutations contains only 1 element
-    # }
   }
   #browser()
   

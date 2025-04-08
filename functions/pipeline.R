@@ -62,8 +62,8 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
   for(g in seq_along(G_list)){
     for(i in (1:num_sims)){
       for(s in seq_along(samplers)){
-        # g=3
-        # i=9
+        # g=11
+        # i=4
         # s=1
         print(paste0("g: ",g))
         print(paste0("i: ",i))
@@ -72,20 +72,6 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
         #browser()
         ## (1) Simulate (already done once before the loop, hence the if clause)
         # if(!((i==1)&(s==1)&(g==1))){
-        #browser()
-        
-        ### BEGIN TODO REMOVE ###
-        # load("data/y_G15R27_gaussmulti.Rda")
-        # load("data/res_G15R27_gaussmulti_1.Rda")
-        # theta_full = array(dim=c(80000,dim(theta)[2:3]))
-        # 
-        # for(i in 1:79){
-        #   theta_full[((i-1)*1000+1):(i*1000),,] = theta[1:1000,,]
-        #   load(paste0("data/res_G15R27_gaussmulti_",i+1,".Rda"))
-        # }
-        # theta_full[79001:80000,,] = theta[1:1000,,]
-        # sampler_output=list(results=theta_full,y=y)
-        ### END TODO REMOVE ###
         #browser()
         if(is.null(params)){
           sampler_output = samplers[[s]](G_list[g], iters, init, seed=i)
@@ -171,12 +157,6 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
             ## (3) set params (choose relabeling algorithm and ellipse)
             # note: the last parameter will be removed due to simplex-constraints
             
-            ### BEGIN TODO REMOVE ###
-            
-            # params <- unrelabelled_params
-            
-            ### END TODO REMOVE ###
-            
             relab = relabel_params(sims,new_labels,G_list[g],relabel_algs[j],num_R)
             params <- relab$params
             sims = relab$sims
@@ -221,47 +201,6 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
               print(paste0("k: ",k))
               ellipse = try(compute_ellipse(params,ellipse_algs[k],iters,sampler_output$lps,limit))
               #browser()
-              ### BEGIN TODO REMOVE ###
-              # if(G>=5){
-              #   d_par = ncol(params)
-              #   covmat = rbind(cbind(ellipse$sigma_hat,rep(0,d_par)),rep(0,d_par+1))
-              #   if(num_var_g == 1+2*num_R){
-              #     blocks = c(rep(1:G,each=num_R),
-              #                rep(1:G,each=num_R),1:G)
-              #   } else{
-              #     blocks = c(rep(1:G,each=num_R),
-              #                rep(1:G,each=num_R*(num_R-1)/2+num_R),1:G)
-              #   }
-              #   block_mat = sapply(1:G, function(s) which(blocks == s))
-              #   for(g1 in 1:(G-1)){
-              #     for(g2 in (g1+1):G){
-              #       covmat[block_mat[,g1],block_mat[,g2]] = 0
-              #       covmat[block_mat[,g2],block_mat[,g1]] = 0
-              #     }
-              #   }
-              #   ellipse$sigma_hat = covmat[,-(d_par+1)][-(d_par+1),]
-              # }
-              #summary(c(ellipse$sigma_hat[block_mat[,1],block_mat[,2]]))
-              # tic()
-              # ellipse = try(compute_ellipse(params,"LW",iters,lps,limit))
-              # toc()
-              # tic()
-              # ellipse = try(compute_ellipse(params,"min_vol_60%HPD",iters,lps,limit))
-              # toc()
-              # tic()
-              # ellipse = try(compute_ellipse(params,ellipse_algs[k],iters,lps,limit))
-              # #ellipse$theta_hat = params[which.max(lps),] 
-              # toc()
-              # tic()
-              # ellipse$sigma_hat = glasso(ellipse$sigma_hat,rho=.02)
-              # toc()
-              # library(cvCovEst)
-              # ellipse$sigma_hat  = linearShrinkLWEst(params[1:iters,])
-              # test = solve_chol(ellipse$sigma_hat)
-              # tic()
-              # library(glasso)
-              # ellipse$sigma_hat = glasso()
-              ### END TODO REMOVE ###
               
               if(is.character(ellipse)){
                 next # sometimes the minVol stuff does not work
@@ -278,7 +217,7 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
                 #thames(lps=lps,params = params)-lfactorial(G)
                 #if()
                 
-                #browser()
+                # browser()
                 if(length(dim(ellipse$sigma_hat))==2){
                   thames_res = try(compute_thames(ellipse,params,sampler_output$lps,G_list[g],iters,
                                                   thames_algs[a],

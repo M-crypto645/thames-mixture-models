@@ -3,6 +3,7 @@ library(uniformly)
 library(gor)
 library(igraph)
 library(parallel)
+library(Rfast)
 #source('thames_function.R')
 
 compute_nobile_identity = function(logZhatGminus1,p0hat_value,G,dirichlet_vec,n){
@@ -29,23 +30,24 @@ param_i_qda_linearized = function(g, data, sims, meanhat, sigmahat, non_I_set){
     postprob_mat = sapply(1:G,function(g_2) dnorm(testvec,
                                                   mean=meanhat[g_2],
                                                   sd=sqrt(sigmahat[[g_2]]),log=TRUE))
-    browser()
+    #browser()
   }
 
   if(is.matrix(postprob_mat)){
     postprob_mat[,non_I_set] = -Inf
     # normalize to deal with potential numeric issues
     maxlogrows = do.call(pmax, c(as.data.frame(postprob_mat)))
+    
     postprob_mat = postprob_mat - maxlogrows
-    
     postprob_mat_normalized = exp(postprob_mat) / rowSums(exp(postprob_mat))
-    
+
     # taking the argmax (linearized)
     helper_mat = t(matrix(rep(1:G,nrow(postprob_mat)),nrow=G)) * (postprob_mat==0)
     g_hat = do.call(pmax, c(as.data.frame(helper_mat)))
-    
+
     maxlogrowsnormalized = do.call(pmax, c(as.data.frame(postprob_mat_normalized)))
     Wmat_row_g = (g_hat + (1-maxlogrowsnormalized))
+    
   } else{
     postprob_mat[non_I_set] = -Inf
     maxlogrows = max(postprob_mat)
@@ -57,7 +59,7 @@ param_i_qda_linearized = function(g, data, sims, meanhat, sigmahat, non_I_set){
     maxlogrowsnormalized = max(postprob_mat_normalized)
     Wmat_row_g = (g_hat + (1-maxlogrowsnormalized))
   }
-  
+  #browser()
   return(Wmat_row_g)
   
 }
@@ -117,11 +119,24 @@ calc_non_I_set = function(scaling, G, sims, num_R, c_opt){
       }
 
       Amat[1:nrow(Amat_eqs),] = Amat_eqs
-      maxnorm_ellipse = 2*try(quadprog::solve.QP(Dmat=sigma_post_inverse,
-                                           dvec=sigma_post_inverse%*%mu_post,
-                                           Amat = t(Amat),
-                                           bvec = rep(0,ncol(Amat)),
-                                           meq = ncol(Amat)))$value + 
+      
+      divide_to_stabilize = 1
+      solution_of_QP = try(quadprog::solve.QP(Dmat=sigma_post_inverse,
+                                              dvec=sigma_post_inverse%*%mu_post,
+                                              Amat = t(Amat),
+                                              bvec = rep(0,ncol(Amat)),
+                                              meq = ncol(Amat)))
+      # solving some numerical issues
+      while(is.character(solution_of_QP)){
+        divide_to_stabilize = divide_to_stabilize * 2
+        solution_of_QP = try(quadprog::solve.QP(Dmat=sigma_post_inverse/divide_to_stabilize,
+                                                dvec=(sigma_post_inverse%*%mu_post)/divide_to_stabilize,
+                                                Amat = t(Amat),
+                                                bvec = rep(0,ncol(Amat)),
+                                                meq = ncol(Amat)))
+      }
+      
+      maxnorm_ellipse = 2*solution_of_QP$value * divide_to_stabilize + 
         t(mu_post)%*%sigma_post_inverse%*%t(t(mu_post))
       graphmat[g1,g2] = 0 + (maxnorm_ellipse <= (c_opt^2))
       graphmat[g2,g1] = 0 + (maxnorm_ellipse <= (c_opt^2))
@@ -151,9 +166,22 @@ calc_non_I_set = function(scaling, G, sims, num_R, c_opt){
   ranges = sapply(0:(G-1),function(i) range(W[(i*dim(sims)[1]+1):((i+1)*dim(sims)[1])]))
   #ranges = unique(ranges[,which(apply(ranges,2,diff)<1)][1,])
   #browser()
-  fixed_params = unique(ranges[1,][which(apply(ranges,2,diff)<1)])
-  complexity_limit_estim = exp(lfactorial(G) - lfactorial(length(fixed_params)))
+  delta_mat = matrix(0,nrow=nrow(graphmat),ncol=ncol(graphmat))
+  for(g1 in 1:(nrow(delta_mat)-1)){
+    for(g2 in (g1+1):(nrow(delta_mat))){
+      delta_mat[g1,g2] = (ranges[2,g1] < ranges[1,g2]) + 0
+    }
+  }
   
+  #fixed_params = unique(ranges[1,][which(apply(ranges,2,diff)<1)])
+  
+  #plot(graph_from_adjacency_matrix(delta_mat))
+  distgraph = graph_from_adjacency_matrix(delta_mat)
+  E(distgraph)$weight = -1 
+  dis <- (-shortest.paths(distgraph, v=(V(distgraph)), mode="out"))
+  
+  complexity_limit_estim = exp(lfactorial(G) - lfactorial(max(dis)))
+  #browser()
   return(list(graph=graph,
               non_I_set=non_I_set,
               complexity_limit_estim=complexity_limit_estim,
@@ -185,11 +213,12 @@ reorder_by_lda = function(scaling, G, sims){
                                function(g) param_i_qda_linearized(g, data, sims, meanhat, sigmahat, non_I_set=non_I_set)))
   W=c(Wmat)
   plot(W)
+  
   return(list(W=W))
 }
 
 # Return lda scaling such that we can order by the first principal component
-get_lda_scaling = function(G, sims){
+get_lda_scaling = function(G, sims, center=NULL){
   #browser()
   if(length(dim(sims))==3){
     data = sapply(1:(dim(sims)[3]-1), function(r) c(sims[,,r]))
@@ -201,7 +230,10 @@ get_lda_scaling = function(G, sims){
     meanhat = sapply(0:(G-1), function(g) mean(data[(dim(sims)[1]*g+1):(dim(sims)[1]*(g+1)),]))
     sigmahat = sapply(0:(G-1), function(g) var(data[(dim(sims)[1]*g+1):(dim(sims)[1]*(g+1)),]),simplify = FALSE)
   }
-
+  #browser()
+  if(!is.null(center)){
+    meanhat = center
+  }
 
   ### BEGIN QDA ###
   #test_qda = qda(df_lda,grouping=rep(1:G,rep(dim(parms)[1],G)))
@@ -382,7 +414,9 @@ thames_mixture <- function(
   ))
 }
 
+# reordering the params (for a vector)
 calc_shift = function(sort_indices,num_var_g, num_R,G){
+  #browser()
   if(num_R>1){
     #browser()
     if(num_var_g == 2*num_R+1){
@@ -406,6 +440,42 @@ calc_shift = function(sort_indices,num_var_g, num_R,G){
   } else{
     shift = c(rep(sort_indices,num_var_g))+rep(seq(0,(num_var_g-1)*G,G),each=G)
   }
+  return(shift)
+}
+
+# reordering the params (for a matrix)
+calc_shift_mat = function(sort_indices,num_var_g, num_R,G){
+  #browser()
+  if(num_R>1){
+    #browser()
+    if(num_var_g == 2*num_R+1){
+      blocks = c(rep(1:G,each=num_R),
+                 rep(1:G,each=num_R),1:G)
+      block_mat = sapply(1:G, function(s) which(blocks == s))
+      block_mat_shifted = block_mat[,sort_indices]
+      shift = c(c(block_mat_shifted[1:num_R,]),
+                c(block_mat_shifted[-(1:num_R),][1:num_R,]),
+                c(block_mat_shifted[nrow(block_mat),]))
+    } else{
+      blocks = c(rep(1:G,each=num_R),
+                 rep(1:G,each=num_R*(num_R-1)/2+num_R),1:G)
+      block_mat = sapply(1:G, function(s) which(blocks == s))
+      block_mat_shifted = block_mat[,sort_indices]
+      shift = c(c(block_mat_shifted[1:num_R,]),
+                c(block_mat_shifted[-(1:num_R),][1:(num_R*(num_R-1)/2+num_R),]),
+                c(block_mat_shifted[nrow(block_mat),]))
+    }
+    
+  } else{
+    #Rfast::
+    shift = sort_indices
+    for(i in (1:num_var_g)[-num_var_g]){
+      shift = cbind(shift,
+                    sort_indices +
+                      i*Rfast::rep_row(rep(G,ncol(sort_indices)),nrow(shift)))
+    }
+  }
+  #browser()
   return(shift)
 }
 
@@ -480,43 +550,39 @@ thames_mixture_simple <- function(
   
   #browser()
   
-  theta_hat_f = extend_param(rbind(mu_post,mu_post),G)[1,]
-  sims_theta_hat_f = array(c(theta_hat_f),dim=c(1,G,num_var_g))
-  theta_hat_f_transform = reorder_by_lda(scaling, G, sims_theta_hat_f)$W
-  #theta_hat_f_transform = reorder_by_lda(c(1-sum(theta_hat[1:(G-1)]),theta_hat),scaling, G)
-  sort_indices = sort(theta_hat_f_transform,index.return=TRUE)$ix
-  #sort_indices = sort(theta_hat[G:(2*G-1)],index.return=TRUE)$ix
-  #sort_indices = 1:G
-
-  shift = calc_shift(sort_indices,num_var_g, num_R,G)
-  #shift = c(rep(sort_indices,num_R))+rep(seq(0,(num_R-1)*G,G),each=G)
-  theta_hat_total = theta_hat_extended[shift]
-  inv_sigma_hat_total = inv_sigma_hat_extended[shift,shift]
-  #to make up for the lower dimensionality
-
-  #I do not use inA because I want to use the (faster) matrix multiplication
-  sorted_params = params[,shift]
+  ### TODO PUT BACK ###
+  # theta_hat_f = extend_param(rbind(mu_post,mu_post),G)[1,]
+  # sims_theta_hat_f = array(c(theta_hat_f),dim=c(1,G,num_var_g))
+  # theta_hat_f_transform = reorder_by_lda(scaling, G, sims_theta_hat_f)$W
+  # sort_indices = sort(theta_hat_f_transform,index.return=TRUE)$ix
+  # shift = calc_shift(sort_indices,num_var_g, num_R,G)
+  # theta_hat_total = theta_hat_extended[shift]
+  # inv_sigma_hat_total = inv_sigma_hat_extended[shift,shift]
+  # sorted_params = params[,shift]
+  ### TODO PUT BACK ###
+  
   #params_sims = array(c(params),dim=c(nrow(params),G,num_var_g))
   params_f_transform = matrix(reorder_by_lda(scaling,G,sims)$W,ncol=G)
   #browser()
-  # if(length((1:G)[-id_trunc])==1){
-  #   perms = c((1:G)[-id_trunc])
-  # } else{
-  #   perms = permn((1:G)[-id_trunc])
-  # }
-  # if(length(id_trunc)==G){
-  #   perms=list(sort_indices)
-  # }
-  # 
+  ### TODO REMOVE ###
+  params_f_transform_index = Rfast::rowOrder(params_f_transform,descending=FALSE)
+  # perms = permn(G) # REMOVE
+  # perms = list(c(1,2,3),c(3,2,1))
   for(l in perms){
-    #Only shift the part that is not truncated
     #browser()
-    l = sort_indices[l]
-    shift = calc_shift(l,num_var_g, num_R,G) #c(rep(l,num_R))+rep(seq(0,(num_R-1)*G,G),each=G)
-    #print(shift)
     
-    # check that order fits
-    sorted_params_f_transform = params_f_transform[,sort_indices]
+    shifted_ls = Rfast::rep_row(1:G,nrow(params_f_transform_index))
+    shifted_ls = t(matrix(c(t(shifted_ls))[c(t(params_f_transform_index))],ncol=nrow(params_f_transform)))
+    shift = calc_shift_mat(shifted_ls,num_var_g, num_R,G)
+    sorted_params = t(matrix(c(t(params))[c(t(shift))+rep((0:(nrow(params)-1))*ncol(params),each=ncol(params))],ncol=nrow(params)))
+    
+    shifted_ls = Rfast::rep_row(sort(l,index.return=TRUE)$ix,nrow(params_f_transform_index))
+    # shifted_ls = t(matrix(t(params_f_transform_index)[rep(l,nrow(params_f_transform_index))],
+    #                    nrow=ncol(params_f_transform_index)))
+    shift = calc_shift_mat(shifted_ls,num_var_g, num_R,G)
+    #matrix(t(params_f_transform)[shifted_ls],nrow=nrow(params_f_transform))
+    
+    sorted_params = t(matrix(c(t(sorted_params))[c(t(shift))+rep((0:(nrow(params)-1))*ncol(params),each=ncol(params))],ncol=nrow(params)))
     
     #TODO PUT BACK?
     #cor3=rep(1,n_samples)
@@ -526,21 +592,38 @@ thames_mixture_simple <- function(
     # }
     #browser()
     # check if included in permuted A
-    theta_hat_total = theta_hat_extended[shift]
-    inv_sigma_hat_total = inv_sigma_hat_extended[shift,shift]
+    theta_hat_total = theta_hat_extended
+    inv_sigma_hat_total = inv_sigma_hat_extended
     
     #I do not use inA because I want to use the (faster) matrix multiplication
     params_centered = sorted_params - t(matrix(rep(theta_hat_total,n_samples),ncol=n_samples))
     num_inA = num_inA + 
       (rowSums((params_centered %*% inv_sigma_hat_total) * params_centered)
-       <=radius^2)#*cor3 TODO PUT BACK?
+       <=radius^2)
   }
-  #browser()
-  # params_centered = sorted_params - t(matrix(rep(theta_hat_total,n_samples),ncol=n_samples))
-  # num_inA = (rowSums((params_centered %*% inv_sigma_hat_total) * params_centered)
-  #    <=radius^2)
-  print(sum(num_inA))
-
+  ### TODO REMOVE ###
+  
+  ### TODO PUT BACK ###
+  # for(l in perms){
+  #   #Only shift the part that is not truncated
+  #   #browser()
+  #   l = sort_indices[l]
+  #   shift = calc_shift(l,num_var_g, num_R,G)
+  #   
+  #   # check that order fits
+  #   sorted_params_f_transform = params_f_transform[,sort_indices]
+  # 
+  #   theta_hat_total = theta_hat_extended[shift]
+  #   inv_sigma_hat_total = inv_sigma_hat_extended[shift,shift]
+  #   
+  #   #I do not use inA because I want to use the (faster) matrix multiplication
+  #   params_centered = sorted_params - t(matrix(rep(theta_hat_total,n_samples),ncol=n_samples))
+  #   num_inA = num_inA + 
+  #     (rowSums((params_centered %*% inv_sigma_hat_total) * params_centered)
+  #      <=radius^2)#*cor3 TODO PUT BACK?
+  # }
+  ### TODO PUT BACK ###
+  
   #browser()
   # calculate zhat
   (log_zhat_inv  = log(mean(exp(-(lps-max(lps)))*num_inA*(lps>limit)))-logvolA-max(lps)-lfactorial(G))  
