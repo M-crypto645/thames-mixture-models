@@ -1,7 +1,7 @@
 rm(list=ls())
-if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
-  setwd("thames_mixtures")
-}
+#if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
+#  setwd("thames_mixtures")
+#}
 
 library(mvtnorm)
 library(sparsediscrim)
@@ -67,8 +67,8 @@ results_T10000_G15 = thames_pipeline(num_sims=1,
 #                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
 co[15] = 3 - (15-3)
-save(results_T10000_G15,file=paste0('data/res_liver_G15_T10000','.Rda'))
-load(file=paste0('data/res_liver_G15_T10000','.Rda'))
+#save(results_T10000_G15,file=paste0('data/res_liver_G15_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G15_T10000','.Rda'))
 results_T10000_G15$df_output
 
 results_T10000_G14 = thames_pipeline(num_sims=1,
@@ -97,8 +97,8 @@ results_T10000_G14 = thames_pipeline(num_sims=1,
 #                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
 co[14] = 3 - (14-3)
-save(results_T10000_G14,file=paste0('data/res_liver_G14_T10000','.Rda'))
-load(file=paste0('data/res_liver_G14_T10000','.Rda'))
+#save(results_T10000_G14,file=paste0('data/res_liver_G14_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G14_T10000','.Rda'))
 results_T10000_G14$df_output
 
 results_T10000_G13 = thames_pipeline(num_sims=1,
@@ -127,8 +127,8 @@ results_T10000_G13 = thames_pipeline(num_sims=1,
 #                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
 co[13] = 3 - (13-3)
-save(results_T10000_G13,file=paste0('data/res_liver_G13_T10000','.Rda'))
-load(file=paste0('data/res_liver_G13_T10000','.Rda'))
+#save(results_T10000_G13,file=paste0('data/res_liver_G13_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G13_T10000','.Rda'))
 results_T10000_G13$df_output
 
 results_T10000_G12 = thames_pipeline(num_sims=1,
@@ -157,8 +157,8 @@ results_T10000_G12 = thames_pipeline(num_sims=1,
 #                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
 co[12] = 3 - (12-3)
-save(results_T10000_G12,file=paste0('data/res_liver_G12_T10000','.Rda'))
-load(file=paste0('data/res_liver_G12_T10000','.Rda'))
+#save(results_T10000_G12,file=paste0('data/res_liver_G12_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G12_T10000','.Rda'))
 results_T10000_G12$df_output
 
 results_T10000_G11 = thames_pipeline(num_sims=1,
@@ -187,8 +187,8 @@ results_T10000_G11 = thames_pipeline(num_sims=1,
 #                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
 co[11] = 3 - (11-3)
-save(results_T10000_G11,file=paste0('data/res_liver_G11_T10000','.Rda'))
-load(file=paste0('data/res_liver_G11_T10000','.Rda'))
+#save(results_T10000_G11,file=paste0('data/res_liver_G11_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G11_T10000','.Rda'))
 results_T10000_G11$df_output
 
 results_T10000_G10 = thames_pipeline(num_sims=1,
@@ -217,8 +217,8 @@ results_T10000_G10 = thames_pipeline(num_sims=1,
 #                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
 co[10] = 3 - (10-3)
-save(results_T10000_G10,file=paste0('data/res_liver_G10_T10000','.Rda'))
-load(file=paste0('data/res_liver_G10_T10000','.Rda'))
+#save(results_T10000_G10,file=paste0('data/res_liver_G10_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G10_T10000','.Rda'))
 results_T10000_G10$df_output
 
 results_T10000_G09 = thames_pipeline(num_sims=1,
@@ -247,8 +247,8 @@ results_T10000_G09 = thames_pipeline(num_sims=1,
 #                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
 co[9] = 3 - (9-3)
-save(results_T10000_G09,file=paste0('data/res_liver_G09_T10000','.Rda'))
-load(file=paste0('data/res_liver_G09_T10000','.Rda'))
+#save(results_T10000_G09,file=paste0('data/res_liver_G09_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G09_T10000','.Rda'))
 results_T10000_G09$df_output
 
 results_T10000_G08 = thames_pipeline(num_sims=1,
@@ -277,8 +277,8 @@ results_T10000_G08 = thames_pipeline(num_sims=1,
 #                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
 co[8] = 3 - (8-3)
-save(results_T10000_G08,file=paste0('data/res_liver_G08_T10000','.Rda'))
-load(file=paste0('data/res_liver_G08_T10000','.Rda'))
+#save(results_T10000_G08,file=paste0('data/res_liver_G08_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G08_T10000','.Rda'))
 results_T10000_G08$df_output
 
 results_T10000_G07 = thames_pipeline(num_sims=1,
@@ -307,8 +307,8 @@ results_T10000_G07 = thames_pipeline(num_sims=1,
 #                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
 co[7] = 3 - (7-3)
-save(results_T10000_G07,file=paste0('data/res_liver_G07_T10000','.Rda'))
-load(file=paste0('data/res_liver_G07_T10000','.Rda'))
+#save(results_T10000_G07,file=paste0('data/res_liver_G07_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G07_T10000','.Rda'))
 results_T10000_G07$df_output
 
 results_T10000_G06 = thames_pipeline(num_sims=1,
@@ -337,8 +337,8 @@ results_T10000_G06 = thames_pipeline(num_sims=1,
 #                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
 co[6] = 3 - (6-3)
-save(results_T10000_G06,file=paste0('data/res_liver_G06_T10000','.Rda'))
-load(file=paste0('data/res_liver_G06_T10000','.Rda'))
+#save(results_T10000_G06,file=paste0('data/res_liver_G06_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G06_T10000','.Rda'))
 results_T10000_G06$df_output
 
 results_T10000_G05 = thames_pipeline(num_sims=1,
@@ -367,8 +367,8 @@ results_T10000_G05 = thames_pipeline(num_sims=1,
 #                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
 co[5] = 4 - (5-4)
-save(results_T10000_G05,file=paste0('data/res_liver_G05_T10000','.Rda'))
-load(file=paste0('data/res_liver_G05_T10000','.Rda'))
+#save(results_T10000_G05,file=paste0('data/res_liver_G05_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G05_T10000','.Rda'))
 results_T10000_G05$df_output
 
 results_T10000_G4 = thames_pipeline(num_sims=1,
@@ -384,8 +384,8 @@ results_T10000_G4 = thames_pipeline(num_sims=1,
                                                                                                                    mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 co[4] = 4 - (4-4)
-save(results_T10000_G4,file=paste0('data/res_liver_G4_T10000','.Rda'))
-load(file=paste0('data/res_liver_G4_T10000','.Rda'))
+#save(results_T10000_G4,file=paste0('data/res_liver_G4_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G4_T10000','.Rda'))
 results_T10000_G4$df_output
 
 results_T10000_G03 = thames_pipeline(num_sims=1,
@@ -401,8 +401,8 @@ results_T10000_G03 = thames_pipeline(num_sims=1,
                                                                                                                   mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                   init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 co[3] = 3 - (3-3)
-save(results_T10000_G03,file=paste0('data/res_liver_G03_T10000','.Rda'))
-load(file=paste0('data/res_liver_G03_T10000','.Rda'))
+#save(results_T10000_G03,file=paste0('data/res_liver_G03_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G03_T10000','.Rda'))
 results_T10000_G03$df_output
 
 results_T10000_G02 = thames_pipeline(num_sims=1,
@@ -418,8 +418,8 @@ results_T10000_G02 = thames_pipeline(num_sims=1,
                                                                                                                    mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 co[2] = 2 - (2-2)
-save(results_T10000_G02,file=paste0('data/res_liver_G02_T10000','.Rda'))
-load(file=paste0('data/res_liver_G02_T10000','.Rda'))
+#save(results_T10000_G02,file=paste0('data/res_liver_G02_T10000','.Rda'))
+#load(file=paste0('data/res_liver_G02_T10000','.Rda'))
 results_T10000_G02$df_output
 
 marglik_res = rep(0,14)
@@ -480,17 +480,6 @@ co = matrix(co[-1],nrow=1)
 write.csv(co,"data/co_liver.csv")
 read.csv("data/co_liver.csv")
 
-pints = sort(unique(liver[,6]))
-confusion_mat_liver = rbind(sapply(pints, function(s) sum((results_T10000_G4$I_map[[1]][1,1,]==1)&(liver[,6]==s))),
-                            sapply(pints, function(s) sum((results_T10000_G4$I_map[[1]][1,1,]==2)&(liver[,6]==s))),
-                            sapply(pints, function(s) sum((results_T10000_G4$I_map[[1]][1,1,]==3)&(liver[,6]==s))),
-                            sapply(pints, function(s) sum((results_T10000_G4$I_map[[1]][1,1,]==4)&(liver[,6]==s))))
-colnames(confusion_mat_liver) = c("",pints)[-1]
-rownames(confusion_mat_liver) = c("1","2","3","4")
-
-write.csv(confusion_mat_liver,"data/confusion_mat_liver.csv")
-read.csv("data/confusion_mat_liver.csv")
-
 liver_post_mean_vec = colMeans(results_T10000_G4$thetastars[[1]][1,1,,1:20])
 liver_post_mean = as.data.frame(rbind(liver_post_mean_vec[1:5],
                                       liver_post_mean_vec[6:10],
@@ -505,24 +494,14 @@ colnames(liver_post_mean) = c("mcv","alkphos","sgpt","sgot","gammagt")
 write.csv(liver_post_mean,"data/liver_post_mean.csv")
 read.csv("data/liver_post_mean.csv")
 
-
-# run to see overlap graph
-# results_T10000_G15 = thames_pipeline(num_sims=1,
-#                                      logposty=function(thetas, G, y) logposty_gaussmulti_vii(thetas,G,y,nu,rep(alpha_0_constant,G)),
-#                                      loglik_partial=NULL,
-#                                      G_list=G, iters=iters/2,
-#                                      relabel_algs = c("ECR"), ellipse_algs = c("standard"),
-#                                      thames_algs = c("simple"),#c(permutations="permutations",simple="simple"),
-#                                      num_R=R,num_var_g=1+2*R,init=function(y) 1, # init is set within the function
-#                                      prior_sampler = function(y, G, iters) prior_sampler_marglik_gaussmulti(y, nu, iters, rep(alpha_0_constant,G)),
-#                                      samplers = list(function(g, iters, init, seed) y_theta_sampler_gaussmulti_vii(n,nu,rep(alpha_0_constant,g),
-#                                                                                                                    mustars_func(g),sigmastars_func(g),taustars_func(g),
-#                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
-
-# co[15] = 6 - 9
-# save(results_T10000_G15,file=paste0('data/res_liver_G15_T10000','.Rda'))
-# load(file=paste0('data/res_liver_G15_T10000','.Rda'))
-# results_T10000_G15$df_output
+liver_post_sd_vec = sqrt(diag(cov(results_T10000_G4$thetastars[[1]][1,1,,1:20])))
+liver_post_sd = as.data.frame(rbind(liver_post_sd_vec[1:5],
+                                    liver_post_sd_vec[6:10],
+                                    liver_post_sd_vec[11:15],
+                                    liver_post_sd_vec[16:20]))
+colnames(liver_post_sd) = c("mcv","alkphos","sgpt","sgot","gammagt")
+write.csv(liver_post_sd,"data/liver_post_sd.csv")
+read.csv("data/liver_post_sd.csv")
 
 ### END liver dataset ###
 
@@ -558,10 +537,8 @@ results_T200000 = thames_pipeline(num_sims=1,
                                   samplers = list(function(g, iters, init, seed) y_theta_sampler_gaussmulti_vii(n,nu,rep(alpha_0_constant,g),
                                                                                                             mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                             init,2*iters,burn_in=burn_in,seed=seed)))
-save(results_T200000,file=paste0('data/res_G15R5_gaussmulti_T200000','.Rda'))
-load(file=paste0('data/res_G15R5_gaussmulti_T200000','.Rda'))
-#load(file=paste0('data/res_G15R5_gaussmulti_T200000_truth','.Rda'))
-#load(file=paste0('data/res_G15R5_gaussmulti_T200000_sims','.Rda'))
+#save(results_T200000,file=paste0('data/res_G15R5_gaussmulti_T200000','.Rda'))
+#load(file=paste0('data/res_G15R5_gaussmulti_T200000','.Rda'))
 results_T200000$df_output
 
 y=matrix(results_T200000$y_mat[1,1,1,],ncol=R)
@@ -569,11 +546,6 @@ params = results_T200000$thetastars[[1]][1,1,,]
 lps = results_T200000$lps[1,1,1,]
 truth = results_T200000$truth
 sims = results_T200000$sims[[1]]
-# truth = log_true_marglik_gauss_multi_vii(y=matrix(results_T200000$y_mat[1,1,1,],ncol=R), nu=nu,
-#                                     lambda=calc_lambda_vii(matrix(results_T200000$y_mat[1,1,1,],ncol=R),nu),
-#                                     alpha_0=rep(alpha_0_constant,G), kappa_0=calc_kappa_0(matrix(results_T200000$y_mat[1,1,1,],ncol=R)),
-#                                     beta=calc_beta(matrix(results_T200000$y_mat[1,1,1,],ncol=R)), mustars = mustars_func(G))
-#sims=? TODO
 
 iters = 100000
 results_T100000 = thames_pipeline(num_sims=1,
@@ -589,9 +561,9 @@ results_T100000 = thames_pipeline(num_sims=1,
                                                                                                                 mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                 init,2*iters,burn_in=burn_in,seed=seed)),
                                   params=params,lps=lps,truth=truth,y=y,sims=sims)
-# save(results_T100000,file=paste0('data/res_G15R5_gaussmulti_T100000','.Rda'))
-# load(file=paste0('data/res_G15R5_gaussmulti_T100000','.Rda'))
-# results_T100000$df_output
+#save(results_T100000,file=paste0('data/res_G15R5_gaussmulti_T100000','.Rda'))
+#load(file=paste0('data/res_G15R5_gaussmulti_T100000','.Rda'))
+results_T100000$df_output
 
 iters = 50000
 results_T50000 = thames_pipeline(num_sims=1,
@@ -607,9 +579,9 @@ results_T50000 = thames_pipeline(num_sims=1,
                                                                                                                mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                init,2*iters,burn_in=burn_in,seed=seed)),
                                  params=params,lps=lps,truth=truth,y=y,sims=sims)
-# save(results_T50000,file=paste0('data/res_G15R5_gaussmulti_T50000','.Rda'))
-# load(file=paste0('data/res_G15R5_gaussmulti_T50000','.Rda'))
-# results_T50000$df_output
+#save(results_T50000,file=paste0('data/res_G15R5_gaussmulti_T50000','.Rda'))
+#load(file=paste0('data/res_G15R5_gaussmulti_T50000','.Rda'))
+results_T50000$df_output
 
 iters = 20000
 results_T20000 = thames_pipeline(num_sims=1,
@@ -625,9 +597,9 @@ results_T20000 = thames_pipeline(num_sims=1,
                                                                                                                mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                init,2*iters,burn_in=burn_in,seed=seed)),
                                  params=params,lps=lps,truth=truth,y=y,sims=sims)
-# save(results_T20000,file=paste0('data/res_G15R5_gaussmulti_T20000','.Rda'))
-# load(file=paste0('data/res_G15R5_gaussmulti_T20000','.Rda'))
-# results_T20000$df_output
+#save(results_T20000,file=paste0('data/res_G15R5_gaussmulti_T20000','.Rda'))
+#load(file=paste0('data/res_G15R5_gaussmulti_T20000','.Rda'))
+results_T20000$df_output
 
 iters = 10000
 results_T10000 = thames_pipeline(num_sims=1,
@@ -643,9 +615,9 @@ results_T10000 = thames_pipeline(num_sims=1,
                                                                                                                mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                init,2*iters,burn_in=burn_in,seed=seed)),
                                  params=params,lps=lps,truth=truth,y=y,sims=sims)
-# save(results_T10000,file=paste0('data/res_G15R5_gaussmulti_T10000','.Rda'))
-# load(file=paste0('data/res_G15R5_gaussmulti_T10000','.Rda'))
-# results_T10000$df_output
+#save(results_T10000,file=paste0('data/res_G15R5_gaussmulti_T10000','.Rda'))
+#load(file=paste0('data/res_G15R5_gaussmulti_T10000','.Rda'))
+results_T10000$df_output
 
 iters = 5000
 results_T5000 = thames_pipeline(num_sims=1,
@@ -661,9 +633,9 @@ results_T5000 = thames_pipeline(num_sims=1,
                                                                                                               mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                               init,2*iters,burn_in=burn_in,seed=seed)),
                                 params=params,lps=lps,truth=truth,y=y,sims=sims)
-# save(results_T5000,file=paste0('data/res_G15R5_gaussmulti_T5000','.Rda'))
-# load(file=paste0('data/res_G15R5_gaussmulti_T5000','.Rda'))
-# results_T5000$df_output
+#save(results_T5000,file=paste0('data/res_G15R5_gaussmulti_T5000','.Rda'))
+#load(file=paste0('data/res_G15R5_gaussmulti_T5000','.Rda'))
+results_T5000$df_output
 
 iters = 2000
 results_T2000 = thames_pipeline(num_sims=1,
@@ -679,9 +651,9 @@ results_T2000 = thames_pipeline(num_sims=1,
                                                                                                               mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                               init,2*iters,burn_in=burn_in,seed=seed)),
                                 params=params,lps=lps,truth=truth,y=y,sims=sims)
-# save(results_T2000,file=paste0('data/res_G15R5_gaussmulti_T2000','.Rda'))
-# load(file=paste0('data/res_G15R5_gaussmulti_T2000','.Rda'))
-# results_T2000$df_output
+#save(results_T2000,file=paste0('data/res_G15R5_gaussmulti_T2000','.Rda'))
+#load(file=paste0('data/res_G15R5_gaussmulti_T2000','.Rda'))
+results_T2000$df_output
 
 iters = 1000
 results_T1000 = thames_pipeline(num_sims=1,
@@ -697,9 +669,9 @@ results_T1000 = thames_pipeline(num_sims=1,
                                                                                                               mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                               init,2*iters,burn_in=burn_in,seed=seed)),
                                 params=params,lps=lps,truth=truth,y=y,sims=sims)
-# save(results_T1000,file=paste0('data/res_G15R5_gaussmulti_T1000','.Rda'))
-# load(file=paste0('data/res_G15R5_gaussmulti_T1000','.Rda'))
-# results_T1000$df_output
+#save(results_T1000,file=paste0('data/res_G15R5_gaussmulti_T1000','.Rda'))
+#load(file=paste0('data/res_G15R5_gaussmulti_T1000','.Rda'))
+results_T1000$df_output
 
 results_T200000$df_output$T = 200000
 results_T100000$df_output$T = 100000
@@ -757,9 +729,9 @@ results_T200000 = thames_pipeline(num_sims=1,
                                                                                                             mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                             init,2*iters,burn_in=burn_in,seed=seed)))
 
-# save(results_T200000,file=paste0('data/res_G5R6_gaussmulti_T200000','.Rda'))
-# load(file=paste0('data/res_G5R6_gaussmulti_T200000','.Rda'))
-# results_T200000$df_output
+#save(results_T200000,file=paste0('data/res_G5R6_gaussmulti_T200000','.Rda'))
+#load(file=paste0('data/res_G5R6_gaussmulti_T200000','.Rda'))
+results_T200000$df_output
 
 params = results_T200000$thetastars[[1]][1,1,,]
 sims = results_T200000$sims[[1]]
@@ -787,9 +759,9 @@ results_T100000 = thames_pipeline(num_sims=1,
                                           mustars_func(g),sigmastars_func(g),taustars_func(g),
                                           init,2*iters,burn_in=burn_in,seed=seed)),
                           params=params,lps=lps,truth=truth,y=y,sims=sims)
-# save(results_T100000,file=paste0('data/res_G5R6_gaussmulti_T100000','.Rda'))
-# load(file=paste0('data/res_G5R6_gaussmulti_T100000','.Rda'))
-# results_T100000$df_output
+#save(results_T100000,file=paste0('data/res_G5R6_gaussmulti_T100000','.Rda'))
+#load(file=paste0('data/res_G5R6_gaussmulti_T100000','.Rda'))
+results_T100000$df_output
 
 iters = 50000
 results_T50000 = thames_pipeline(num_sims=1,
@@ -805,9 +777,9 @@ results_T50000 = thames_pipeline(num_sims=1,
                                                                                                                        mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                        init,2*iters,burn_in=burn_in,seed=seed)),
                                  params=params,lps=lps,truth=truth,y=y,sims=sims)
-# save(results_T50000,file=paste0('data/res_G5R6_gaussmulti_T50000','.Rda'))
-# load(file=paste0('data/res_G5R6_gaussmulti_T50000','.Rda'))
-# results_T50000$df_output
+#save(results_T50000,file=paste0('data/res_G5R6_gaussmulti_T50000','.Rda'))
+#load(file=paste0('data/res_G5R6_gaussmulti_T50000','.Rda'))
+results_T50000$df_output
 
 iters = 20000
 results_T20000 = thames_pipeline(num_sims=1,
@@ -824,9 +796,9 @@ results_T20000 = thames_pipeline(num_sims=1,
                                                                                                            init,2*iters,burn_in=burn_in,seed=seed)),
                                  params=params,lps=lps,truth=truth,y=y,sims=sims)
 
-# save(results_T20000,file=paste0('data/res_G5R6_gaussmulti_T20000','.Rda'))
-# load(file=paste0('data/res_G5R6_gaussmulti_T20000','.Rda'))
-# results_T20000$df_output
+#save(results_T20000,file=paste0('data/res_G5R6_gaussmulti_T20000','.Rda'))
+#load(file=paste0('data/res_G5R6_gaussmulti_T20000','.Rda'))
+results_T20000$df_output
 
 iters = 10000
 results_T10000 = thames_pipeline(num_sims=1,
@@ -843,9 +815,9 @@ results_T10000 = thames_pipeline(num_sims=1,
                                                                                                            init,2*iters,burn_in=burn_in,seed=seed)),
                                  params=params,lps=lps,truth=truth,y=y,sims=sims)
 
-# save(results_T10000,file=paste0('data/res_G5R6_gaussmulti_T10000','.Rda'))
-# load(file=paste0('data/res_G5R6_gaussmulti_T10000','.Rda'))
-# results_T10000$df_output
+#save(results_T10000,file=paste0('data/res_G5R6_gaussmulti_T10000','.Rda'))
+#load(file=paste0('data/res_G5R6_gaussmulti_T10000','.Rda'))
+results_T10000$df_output
 
 iters = 5000
 results_T5000 = thames_pipeline(num_sims=1,
@@ -862,9 +834,9 @@ results_T5000 = thames_pipeline(num_sims=1,
                                                                                                                       init,2*iters,burn_in=burn_in,seed=seed)),
                                 params=params,lps=lps,truth=truth,y=y,sims=sims)
 
-# save(results_T5000,file=paste0('data/res_G5R6_gaussmulti_T5000','.Rda'))
-# load(file=paste0('data/res_G5R6_gaussmulti_T5000','.Rda'))
-# results_T5000$df_output
+#save(results_T5000,file=paste0('data/res_G5R6_gaussmulti_T5000','.Rda'))
+#load(file=paste0('data/res_G5R6_gaussmulti_T5000','.Rda'))
+results_T5000$df_output
 
 iters = 2000
 results_T2000 = thames_pipeline(num_sims=1,
@@ -881,9 +853,9 @@ results_T2000 = thames_pipeline(num_sims=1,
                                                                                                           init,2*iters,burn_in=burn_in,seed=seed)),
                                 params=params,lps=lps,truth=truth,y=y,sims=sims)
 
-# save(results_T2000,file=paste0('data/res_G5R6_gaussmulti_T2000','.Rda'))
-# load(file=paste0('data/res_G5R6_gaussmulti_T2000','.Rda'))
-# results_T2000$df_output
+#save(results_T2000,file=paste0('data/res_G5R6_gaussmulti_T2000','.Rda'))
+#load(file=paste0('data/res_G5R6_gaussmulti_T2000','.Rda'))
+results_T2000$df_output
 
 iters = 1000
 results_T1000 = thames_pipeline(num_sims=1,
@@ -900,9 +872,9 @@ results_T1000 = thames_pipeline(num_sims=1,
                                                                                                           init,2*iters,burn_in=burn_in,seed=seed)),
                                 params=params,lps=lps,truth=truth,y=y,sims=sims)
 
-# save(results_T1000,file=paste0('data/res_G5R6_gaussmulti_T1000','.Rda'))
-# load(file=paste0('data/res_G5R6_gaussmulti_T1000','.Rda'))
-# results_T1000$df_output 
+#save(results_T1000,file=paste0('data/res_G5R6_gaussmulti_T1000','.Rda'))
+#load(file=paste0('data/res_G5R6_gaussmulti_T1000','.Rda'))
+results_T1000$df_output 
 
 results_T1000$df_output$T = 1000
 results_T2000$df_output$T = 2000
@@ -949,9 +921,9 @@ results_T10000_G2 = thames_pipeline(num_sims=1,
                                                                                                                           mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                           init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
-# results_T10000_G2$df_output
-# save(results_T10000_G2,file=paste0('data/res_banknotes_G2_T10000','.Rda'))
-# load(file=paste0('data/res_banknotes_G2_T10000','.Rda'))
+results_T10000_G2$df_output
+#save(results_T10000_G2,file=paste0('data/res_banknotes_G2_T10000','.Rda'))
+#load(file=paste0('data/res_banknotes_G2_T10000','.Rda'))
 
 results_T10000_G3 = thames_pipeline(num_sims=1,
                                     logposty=function(thetas, G, y) logposty_gaussmulti_transformed(thetas,G,y,nu,rep(alpha_0_constant,G)),
@@ -966,9 +938,9 @@ results_T10000_G3 = thames_pipeline(num_sims=1,
                                                                                                                           mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                           init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
-# results_T10000_G3$df_output
-# save(results_T10000_G3,file=paste0('data/res_banknotes_G3_T10000','.Rda'))
-# load(file=paste0('data/res_banknotes_G3_T10000','.Rda'))
+results_T10000_G3$df_output
+#save(results_T10000_G3,file=paste0('data/res_banknotes_G3_T10000','.Rda'))
+#load(file=paste0('data/res_banknotes_G3_T10000','.Rda'))
 
 # run to visualize CO
 # results_T10000_G4 = thames_pipeline(num_sims=1,
@@ -996,8 +968,8 @@ results_T10000_G4 = thames_pipeline(num_sims=1,
                                                                                                                           mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                           init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
-# save(results_T10000_G4,file=paste0('data/res_banknotes_G4_T10000','.Rda'))
-# load(file=paste0('data/res_banknotes_G4_T10000','.Rda'))
+#save(results_T10000_G4,file=paste0('data/res_banknotes_G4_T10000','.Rda'))
+#load(file=paste0('data/res_banknotes_G4_T10000','.Rda'))
 
 # run to visualize CO
 # results_T10000_G5 = thames_pipeline(num_sims=1,
@@ -1024,8 +996,8 @@ results_T10000_G5 = thames_pipeline(num_sims=1,
                                     samplers = list(function(g, iters, init, seed) y_theta_sampler_gaussmulti_transformed(n,nu,rep(alpha_0_constant,g),
                                                                                                                           mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                           init,2*iters,burn_in=burn_in,seed=seed,y=y)))
-# save(results_T10000_G5,file=paste0('data/res_banknotes_G5_T10000','.Rda'))
-# load(file=paste0('data/res_banknotes_G5_T10000','.Rda'))
+#save(results_T10000_G5,file=paste0('data/res_banknotes_G5_T10000','.Rda'))
+#load(file=paste0('data/res_banknotes_G5_T10000','.Rda'))
 
 marglik_res = rep(0,4)
 marglik_res[1] = results_T10000_G2$df_output$value[results_T10000_G2$df_output$estimate=="estim"]
@@ -1050,7 +1022,7 @@ co[2] = 3
 co[3] = 3 - 1 
 co[4] = 3 - 2
 co = matrix(oic,nrow=1)
-write.csv(oic,"data/oic_banknote.csv")
+write.csv(co,"data/oic_banknote.csv")
 read.csv("data/oic_banknote.csv")
 
 confusion_mat_banknote = rbind(c(sum((results_T10000_G3$I_map[[1]][1,1,]==1)&(banknote[,1]=="genuine")),

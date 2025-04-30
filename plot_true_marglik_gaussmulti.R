@@ -1,7 +1,7 @@
 rm(list=ls())
-if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
-  setwd("thames_mixtures")
-}
+# if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
+#   setwd("thames_mixtures")
+# }
 
 library(ggplot2)
 

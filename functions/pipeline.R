@@ -29,6 +29,8 @@ library(mclust)
 #'                                 (before relabelling)
 #'          I_map       [array]    MAP estimate of the allocation vector
 #'          thetastars  [array]    the relabelled thetas
+#'          graphs      [igraph]   the overlapgraphs (colored by I(G))
+#'          Ws          [array]    the function W evaluated at thetastars
 thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
                            relabel_algs, ellipse_algs, thames_algs,
                            samplers, num_R,num_var_g, init=NULL,prior_sampler=NULL,
@@ -52,6 +54,7 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
   I_map_list = list()
   etas_list = list()  
   graphs = list()
+  params_f_transforms = list()
   
   # this is assuming there is less data points than MCMC iterations
   y_mat = array(dim=c(length(G_list), num_sims,
@@ -62,8 +65,8 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
   for(g in seq_along(G_list)){
     for(i in (1:num_sims)){
       for(s in seq_along(samplers)){
-        # g=11
-        # i=4
+        # g=3
+        # i=9
         # s=1
         print(paste0("g: ",g))
         print(paste0("i: ",i))
@@ -72,6 +75,20 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
         #browser()
         ## (1) Simulate (already done once before the loop, hence the if clause)
         # if(!((i==1)&(s==1)&(g==1))){
+        #browser()
+        
+        ### BEGIN TODO REMOVE ###
+        # load("data/y_G15R27_gaussmulti.Rda")
+        # load("data/res_G15R27_gaussmulti_1.Rda")
+        # theta_full = array(dim=c(80000,dim(theta)[2:3]))
+        # 
+        # for(i in 1:79){
+        #   theta_full[((i-1)*1000+1):(i*1000),,] = theta[1:1000,,]
+        #   load(paste0("data/res_G15R27_gaussmulti_",i+1,".Rda"))
+        # }
+        # theta_full[79001:80000,,] = theta[1:1000,,]
+        # sampler_output=list(results=theta_full,y=y)
+        ### END TODO REMOVE ###
         #browser()
         if(is.null(params)){
           sampler_output = samplers[[s]](G_list[g], iters, init, seed=i)
@@ -138,7 +155,7 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
         # overloading the logpost function (y not needed after here)
         logpost = function(theta,G) logposty(theta,G,sampler_output$y)
         sampler_names[s] = sampler_output$name
-
+        
         for(j in (1:length(relabel_algs))){
           ## (2) relabel (see relabel_algs for a list of relabelling algorithms)
           #browser()
@@ -156,6 +173,12 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
             
             ## (3) set params (choose relabeling algorithm and ellipse)
             # note: the last parameter will be removed due to simplex-constraints
+            
+            ### BEGIN TODO REMOVE ###
+            
+            # params <- unrelabelled_params
+            
+            ### END TODO REMOVE ###
             
             relab = relabel_params(sims,new_labels,G_list[g],relabel_algs[j],num_R)
             params <- relab$params
@@ -175,7 +198,7 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
           ### PLOT2: first parameter (after relabelling)###
           ggplot(data=as.data.frame(cbind(seq_along(params[,1]),params[,1])),aes(x=V1,y=V2)) + geom_point() + labs(x="T",y=expression(theta[1][1]))
           #ggplot(data=as.data.frame(cbind(seq_along(params[,1]),params[,11])),aes(x=V1,y=V2)) + geom_point() + labs(x="T",y=expression(theta[1][1]))
-        
+          
           # browser()
           # sims[,1,]
           # sims[,2,]
@@ -183,6 +206,9 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
           skipthames = FALSE
           if(!is.null(p0hat)){
             p0hat_value = p0hat(sampler_output$y, extend_param(params,G_list[g]), G_list[g])
+            map_estim = p0hat_value$Zhat
+            p0hat_value = p0hat_value$p0hat
+            #browser()
             if(p0hat_value > 1/(2*iters)){
               res[i,g,s,j,,,] = p0hat_value
               skipthames = TRUE
@@ -194,13 +220,12 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
             #browser()
             # determine the truncation level alpha (named "limit" in the code)
             limit = chisq_find_limit(sampler_output$lps,d_par=ncol(params))
-
+            
             for(k in (1:length(ellipse_algs))){
               #browser()
               # k=2
               print(paste0("k: ",k))
               ellipse = try(compute_ellipse(params,ellipse_algs[k],iters,sampler_output$lps,limit))
-              #browser()
               
               if(is.character(ellipse)){
                 next # sometimes the minVol stuff does not work
@@ -213,11 +238,7 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
                 #browser()
                 print(paste0("a: ",a))
                 
-                #library(thames)
-                #thames(lps=lps,params = params)-lfactorial(G)
-                #if()
-                
-                # browser()
+                #browser()
                 if(length(dim(ellipse$sigma_hat))==2){
                   thames_res = try(compute_thames(ellipse,params,sampler_output$lps,G_list[g],iters,
                                                   thames_algs[a],
@@ -329,7 +350,11 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
           #browser()
           thetas[i,s,,] = unrelabelled_params
           thetastars[i,s,,] = params
-          I_map[i,s,] = z_dummy[which.max(sampler_output$lps),]
+          if(!is.null(p0hat)){
+            I_map[i,s,] = map_estim[,which.max(sampler_output$lps)]
+          } else{
+            I_map[i,s,] = z_dummy[which.max(sampler_output$lps),] 
+          }
           etas[i,s,,] = thames_res$etas
         }
         lps_mat[g,i,s,] =  sampler_output$lps
@@ -344,11 +369,12 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
     sims_list[[g]] = sims
     I_map_list[[g]] = I_map
     etas_list[[g]] = etas
+    params_f_transforms[[length(params_f_transforms) + 1]] = thames_res$params_f_transform
   }
   df_output = melt(res)
   names(df_output) = c("sim", "G", "sampler",
-                                "relabalg",
-                                "ellipsealg","thamesalg","estimate","value")
+                       "relabalg",
+                       "ellipsealg","thamesalg","estimate","value")
   df_output$G = c("",sapply(as.numeric(df_output$G), function(s) G_list[s]))[-1]
   
   for(i in seq_along(samplers)){
@@ -380,5 +406,6 @@ thames_pipeline = function(num_sims, logposty, loglik_partial, G_list, iters,
               I_map=I_map_list,
               y_mat=y_mat,
               graphs=graphs,
+              Ws=params_f_transforms,
               truth=truth))
 }

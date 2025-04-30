@@ -361,3 +361,28 @@ for(i in 1:14){
   abline(v=1.1)
 }
 dev.off()
+
+# dummy example of overlapgraphs
+pdf(file="atelier/overlapgraphs_dummy_example.pdf",width = 8, height = 3.5)
+par(mfrow=c(1,2))
+set.seed(1) # to control the graph layout
+dummy_graphs = list()
+dummy_graphs[[1]] = graph_from_adjacency_matrix(cbind(c(0,0),c(0,0)),mode="undirected")
+V(dummy_graphs[[1]])$color = rep("white",2)
+dummy_graphs[[2]] = graph_from_adjacency_matrix(cbind(c(0,1,1,0),
+                                                      c(1,0,0,1),
+                                                      c(1,0,0,1),
+                                                      c(0,1,1,0)),mode="undirected")
+V(dummy_graphs[[2]])$color = rep("white",4)
+
+for(i in 1:2){
+  par(mai=c(0,0,0,0))
+  plot(dummy_graphs[[i]],xlim = c(-1,1),
+       vertex.size = 30,
+       vertex.label.cex = 3)
+  par(mai=c(0.4,0.4,0.2,0))
+  title(paste0("Model ",i),adj = .9, line = -16,cex.main = 2)
+  text(-1,1,LETTERS[i],xpd=TRUE,cex=3)
+  abline(v=1.2)
+}
+dev.off()

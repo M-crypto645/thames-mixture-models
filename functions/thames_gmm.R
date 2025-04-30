@@ -149,6 +149,9 @@ calc_non_I_set = function(scaling, G, sims, num_R, c_opt){
   non_I_set = gor::build_cover_greedy(graph)$set
   V(graph)$color = rep("blue",G)
   V(graph)$color[non_I_set] = "red"
+  print("size non I")
+  #browser()
+  print(length(non_I_set))
   plot(graph)
   
   # num_cores <- detectCores()
@@ -201,14 +204,7 @@ reorder_by_lda = function(scaling, G, sims){
     data = matrix(c(array(sims,dim=c(dim(sims)[1:2],1))[,,1]),ncol=1)
   }
   
-  # num_cores <- detectCores()
-  # num_use_cores = min(c(num_cores-2,9))
-  # if(num_use_cores == 0){
-  #   browser()
-  # }
-  # Wmat = simplify2array(mclapply(1:G,
-  #                                function(g) param_i_qda_linearized(g, data, sims, meanhat, sigmahat, non_I_set=non_I_set),
-  #                                mc.cores = num_use_cores))
+  #browser()
   Wmat = simplify2array(lapply(1:G,
                                function(g) param_i_qda_linearized(g, data, sims, meanhat, sigmahat, non_I_set=non_I_set)))
   W=c(Wmat)
@@ -449,21 +445,31 @@ calc_shift_mat = function(sort_indices,num_var_g, num_R,G){
   if(num_R>1){
     #browser()
     if(num_var_g == 2*num_R+1){
+      
       blocks = c(rep(1:G,each=num_R),
                  rep(1:G,each=num_R),1:G)
       block_mat = sapply(1:G, function(s) which(blocks == s))
-      block_mat_shifted = block_mat[,sort_indices]
-      shift = c(c(block_mat_shifted[1:num_R,]),
-                c(block_mat_shifted[-(1:num_R),][1:num_R,]),
-                c(block_mat_shifted[nrow(block_mat),]))
+      block_mat_shifted = block_mat[,c(t(sort_indices))]
+      shift = cbind(t(matrix(c(block_mat_shifted[1:num_R,]),ncol=nrow(sort_indices))),
+                    t(matrix(c(block_mat_shifted[-(1:num_R),][1:num_R,]),ncol=nrow(sort_indices))),
+                    t(matrix(c(block_mat_shifted[nrow(block_mat),]),ncol=nrow(sort_indices))))
     } else{
+      
       blocks = c(rep(1:G,each=num_R),
                  rep(1:G,each=num_R*(num_R-1)/2+num_R),1:G)
       block_mat = sapply(1:G, function(s) which(blocks == s))
-      block_mat_shifted = block_mat[,sort_indices]
-      shift = c(c(block_mat_shifted[1:num_R,]),
-                c(block_mat_shifted[-(1:num_R),][1:(num_R*(num_R-1)/2+num_R),]),
-                c(block_mat_shifted[nrow(block_mat),]))
+      block_mat_shifted = block_mat[,c(t(sort_indices))]
+      shift = cbind(t(matrix(c(block_mat_shifted[1:num_R,]),ncol=nrow(sort_indices))),
+                    t(matrix(c(block_mat_shifted[-(1:num_R),][1:(num_R*(num_R-1)/2+num_R),]),ncol=nrow(sort_indices))),
+                    t(matrix(c(block_mat_shifted[nrow(block_mat),]),ncol=nrow(sort_indices))))
+      
+      # blocks = c(rep(1:G,each=num_R),
+      #            rep(1:G,each=num_R*(num_R-1)/2+num_R),1:G)
+      # block_mat = sapply(1:G, function(s) which(blocks == s))
+      # block_mat_shifted = block_mat[,sort_indices]
+      # shift = c(c(block_mat_shifted[1:num_R,]),
+      #           c(block_mat_shifted[-(1:num_R),][1:(num_R*(num_R-1)/2+num_R),]),
+      #           c(block_mat_shifted[nrow(block_mat),]))
     }
     
   } else{
@@ -562,6 +568,7 @@ thames_mixture_simple <- function(
   ### TODO PUT BACK ###
   
   #params_sims = array(c(params),dim=c(nrow(params),G,num_var_g))
+  #browser()
   params_f_transform = matrix(reorder_by_lda(scaling,G,sims)$W,ncol=G)
   #browser()
   ### TODO REMOVE ###
@@ -575,6 +582,7 @@ thames_mixture_simple <- function(
     shifted_ls = t(matrix(c(t(shifted_ls))[c(t(params_f_transform_index))],ncol=nrow(params_f_transform)))
     shift = calc_shift_mat(shifted_ls,num_var_g, num_R,G)
     sorted_params = t(matrix(c(t(params))[c(t(shift))+rep((0:(nrow(params)-1))*ncol(params),each=ncol(params))],ncol=nrow(params)))
+    sorted_params_f_transform = t(matrix(c(t(params_f_transform))[c(t(shift))+rep((0:(nrow(params_f_transform)-1))*ncol(params_f_transform),each=ncol(params_f_transform))],ncol=nrow(params_f_transform)))
     
     shifted_ls = Rfast::rep_row(sort(l,index.return=TRUE)$ix,nrow(params_f_transform_index))
     # shifted_ls = t(matrix(t(params_f_transform_index)[rep(l,nrow(params_f_transform_index))],
@@ -584,13 +592,6 @@ thames_mixture_simple <- function(
     
     sorted_params = t(matrix(c(t(sorted_params))[c(t(shift))+rep((0:(nrow(params)-1))*ncol(params),each=ncol(params))],ncol=nrow(params)))
     
-    #TODO PUT BACK?
-    #cor3=rep(1,n_samples)
-    # TODO
-    # for(g in (1:(G-1))){
-    #   cor3 = cor3 * (sorted_params_f_transform[,g]<sorted_params_f_transform[,g+1])
-    # }
-    #browser()
     # check if included in permuted A
     theta_hat_total = theta_hat_extended
     inv_sigma_hat_total = inv_sigma_hat_extended

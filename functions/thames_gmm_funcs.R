@@ -59,45 +59,6 @@ relabel = function(lps, loglik_partial, algs, sims, G, iters, z_dummy, y, seed=2
     }
     p = p / sum
   } 
-  #browser()
-  #p_list_unnorm = apply(sims,1,function(theta) loglik_gmm_partial(y,c(theta[,3],theta[,1],sqrt(theta[,2])),G),simplify = 'FALSE')
-  # p_list <- sapply(p_list_unnorm,function(x){exp(x)/rowSums(exp(x))},simplify=FALSE)
-  # p <- aperm(sapply(p_list,function(x){x},simplify='array'),c(3,1,2))
-  
-  ### Plotting stuff ###
-  # round_y = sort(unique(round(y)))
-  # break_vec=c(sort(c(sort(unique(round(y))),
-  #                      sort(unique(round(y)))-5,
-  #                      sort(unique(round(y)))+5)))
-  # hist(y,freq=TRUE,axes = FALSE,cex.main=2,cex.lab=1.5,cex.sub=1.5,xlab=NULL,cex.axis=1.5,breaks=break_vec)
-  # zpivot=z_dummy[which.max(lps_marginal),]
-  # axis(2,cex.axis=1.5)
-  # axis(1,pos=-6.3,cex.axis=1.5,at=c(100,break_vec[seq(5,length(break_vec)-3,3)],2500))
-  # rug(y[y<150],col="green",ticksize = .1,pos=-6,lwd=1.5)
-  # colors=viridis::inferno(25)
-  # library(RColorBrewer)
-  # n <- 60
-  # qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
-  # col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
-  # colors=col_vector[c(1:5,19:25,44:60)]
-  # #colors=Polychrome::createPalette(25,seedcolors = c("#ff0000","#0000ff","#00ff00"),M=100000)
-  # library(Polychrome)
-  # test=function(){
-  #   for(i in (2:24)){
-  #     rug(y[(y>(round_y[i-1]+50))&(y<(round_y[i]+50))],col=colors[i],ticksize = .1,pos=-6,lwd=1.5)
-  #   }
-  # }
-  # test()
-  
-  #hist(y,axes = FALSE,cex.main=2,cex.lab=1.5,cex.sub=1.5,xlab=NULL,cex.axis=1.5)
-  #zpivot=z_dummy[which.max(lps_marginal),]
-  # axis(1,pos=-5.125,cex.axis=1.5)
-  # axis(2,cex.axis=1.5)
-  # rug(y[zpivot==1],col="green",ticksize = .1,pos=-5,lwd=1.5)
-  # rug(y[zpivot==2],col="red",ticksize = .1,pos=-5,lwd=1.5)
-  # rug(y[zpivot==3],col="blue",ticksize = .1,pos=-5,lwd=1.5)
-  
-  ### Plotting stuff ###
   
   ls<-label.switching(method=algs,
                       zpivot=z_dummy[which.max(lps),],z = z_dummy,K = G, data = y,
@@ -264,39 +225,7 @@ chisq_find_limit = function(lps,d_par){
   mean_chisq = d_par#length(lps)
   sd_chisq = sqrt(2*length(lps))
   neg_lps = -lps#[(iters+1):(2*iters)]
-  #browser()
-  # trunc_i = function(i,plot_res=FALSE){
-  #   #browser()
-  #   limit_i = sort(neg_lps,decreasing=TRUE)[i]
-  #   neg_lps_trunc = neg_lps[neg_lps<=limit_i]
-  #   neg_lps_trunc_mu_hat = mean(neg_lps_trunc)
-  #   neg_lps_trunc_sigma_hat = sd(neg_lps_trunc)
-  #   
-  #   neg_lps_trunc_mu_tilde = neg_lps_trunc_mu_hat - mean_chisq
-  #   neg_lps_trunc_sigma_tilde = neg_lps_trunc_sigma_hat / sd_chisq
-  #   
-  #   neg_lps_norm_chisq = ((neg_lps_trunc-neg_lps_trunc_mu_hat)/neg_lps_trunc_sigma_tilde)+mean_chisq
-  #   neg_lps_norm_chisq = neg_lps_norm_chisq + runif(1,min=-1,max=1)
-  #   #cdf_chisq = Vectorize(function(t) pchisq(t/neg_lps_trunc_sigma_tilde-neg_lps_trunc_mu_tilde,df=length(neg_lps)))
-  #   cdf_chisq = Vectorize(function(t) pchisq(t, df=mean_chisq)/pchisq(max(neg_lps_norm_chisq), df=mean_chisq))
-  #   ecdf_func = Vectorize(function(x) sum(neg_lps_norm_chisq<=x)/length(neg_lps_norm_chisq))
-  #   if(plot_res){
-  #     percent_non_zero = round(length(neg_lps_norm_chisq)/length(lps),3)
-  #     plot(ecdf_func(sort(neg_lps_norm_chisq)),type="l",col="purple",
-  #          xlab="index of tau",ylab="CDF",main=sprintf("Truncation: %f",percent_non_zero))
-  #     
-  #     lines(cdf_chisq(sort(neg_lps_norm_chisq)),type="l",col="green3")
-  #     legend(1, 1, legend=c("pchisq", "ECDF"),
-  #            col=c("green3", "purple"), lty=1:2, cex=0.8)
-  #   }
-  #   #print(i)
-  #   max(abs(ecdf_func(neg_lps_norm_chisq) - cdf_chisq(neg_lps_norm_chisq)))
-  # }
-  # thinned_sequence = seq(2,length(neg_lps)-1,by=100) # thin to save time
-  # #Vectorize(trunc_i)(thinned_sequence)
-  # kolm_dist = sapply(thinned_sequence,function(i) trunc_i(i))
-  # kolm_dist = sapply(thinned_sequence,function(i) trunc_i(i))
-  #browser()
+
   thinned_sequence = seq(2,floor((length(neg_lps)-1)*0.8),by=100)#seq(2,length(neg_lps)-1,by=100)#3:(length(neg_lps)-1) # thin to save time
   # thinned_sequence = seq(2,length(neg_lps)-1,by=100) # thin to save time
   limit_i = sort(neg_lps,decreasing=TRUE)[thinned_sequence]
@@ -435,12 +364,8 @@ compute_thames = function(ellipse,params,lps,G,iters,type,logpost,num_R,seed=202
 
   n_simuls = 2*iters# 10000
   
-  #browser()
-  
-  #simsmat <- apply(sims, 3, c)
   simsmat = matrix(c(sims),nrow=dim(sims)[1])
-  #sims_test = array(c(simsmat),dim=dim(sims))
-  # TODO should I compute the ellipse directly here?
+  
   #browser()
   if(dim(sims)[3]==1){
     mu_post = colMeans(simsmat[1:iters,])
@@ -450,9 +375,6 @@ compute_thames = function(ellipse,params,lps,G,iters,type,logpost,num_R,seed=202
     sigma_post = cov(simsmat[1:iters,-ncol(simsmat)])
   }
   
-  # sigma_post = sigma_hat
-  # mu_post = theta_hat
-  
   inv_post_var = sparsediscrim::solve_chol(sigma_post)
   #browser()
   set.seed(seed)
@@ -460,9 +382,6 @@ compute_thames = function(ellipse,params,lps,G,iters,type,logpost,num_R,seed=202
   log_cor = -Inf
   
   in_ellipse = TRUE
-  # sometimes, the ellipse contains no point within itself
-  # TODO: fix this
-  # browser()
   c_opt_old = c_opt
   center = NULL
   while(is.infinite(log_cor) & in_ellipse){
@@ -534,22 +453,6 @@ compute_thames = function(ellipse,params,lps,G,iters,type,logpost,num_R,seed=202
       }
     }
   }
-  #browser()
-  #plot(5000:n_simuls,log(cumsum(lps_test>limit)[(5000:n_simuls)]/(5000:n_simuls)))
-  # log_cor = log(mean(apply(param_test, 1,function(x) bound_gmm(x,G=G))))
-  # print(log_cor)
-  # inverse_joint_test = numeric(dim(param_test)[1])
-  # if(!(limit== -Inf)){
-  #   param_test = param_test[apply(param_test, 1,function(x) bound_gmm(x,G=G) ),]
-  #   inverse_joint_test = apply(param_test,1, function(x) -lp_gmm_marginal(theta=c(1-sum(x[1:(G-1)]),x),y=y,G=G,m=m,R=R))
-  #   log_cor2 = log(mean(inverse_joint_test < -limit))
-  #   print(log_cor2)
-  #   log_cor = log_cor + log_cor2
-  #   #browser()
-  # } else{
-  #   inverse_joint_test=0
-  # }
-  #browser()
 
   if(type=="simple"){
 
@@ -558,7 +461,7 @@ compute_thames = function(ellipse,params,lps,G,iters,type,logpost,num_R,seed=202
     mu_post_extended = extend_param(rbind(mu_post,mu_post),G)[1,]
     sims_theta_hat_extended = array(c(mu_post_extended),dim=c(1,dim(sims)[2:3]))
     # theta_hat_extended = c(theta_hat,1-sum(theta_hat[(2*G+1):(3*G-1)]))
-    
+    #browser()
     param_test_f_transform = matrix(reorder_by_lda(scaling, G, sims_test)$W,ncol=G)
     
     graphmat = graph_and_non_I_set$graphmat
@@ -566,12 +469,10 @@ compute_thames = function(ellipse,params,lps,G,iters,type,logpost,num_R,seed=202
     for(g1 in 1:(nrow(delta_mat)-1)){
       for(g2 in (g1+1):(nrow(delta_mat))){
         delta_mat[g1,g2] = (mean(param_test_f_transform[,g1] < param_test_f_transform[,g2]) == 1)
-        ### BEGIN TODO REMOVE ###
         delta_mat[g2,g1] = (mean(param_test_f_transform[,g2] < param_test_f_transform[,g1]) == 1)        
-        ### END TODO REMOVE ###
       }
     }
-    # browser()
+    #browser()
     delta_mat = delta_mat * (1-graph_and_non_I_set$graphmat)
 
     adj_matrix = delta_mat
@@ -670,18 +571,6 @@ compute_thames = function(ellipse,params,lps,G,iters,type,logpost,num_R,seed=202
   } else if(type=="simple"){
     #browser()
     d_par <- length(theta_hat)
-    # lml_thames_marginal <- try(thames_mixture(
-    #   lps = lps[(iters+1):(2*iters)],
-    #   params = (params[(iters+1):(2*iters),1:(dim(params)[2])]),
-    #   theta_hat = theta_hat,
-    #   sigma_hat = sigma_hat,
-    #   d_par = d_par,
-    #   c_opt = c_opt,
-    #   G = G,
-    #   perms = permn(G),
-    #   limit=limit,
-    #   num_R=num_var_g
-    # ))
     lml_thames_marginal <- thames_mixture_simple(
       lps = lps[(iters+1):(2*iters)],
       params = (params[(iters+1):(2*iters),1:(dim(params)[2])]),
@@ -700,6 +589,30 @@ compute_thames = function(ellipse,params,lps,G,iters,type,logpost,num_R,seed=202
       num_var_g=num_var_g
     )
     #browser()
+    ### FOR VISUALIZATION ###
+    if((dim(sims)[3]>1)&(num_R==1)){
+      sims_copy = sims
+      dummy_sims = array(dim=c(floor(sqrt(dim(sims)[1]))^2,dim(sims)[2],dim(sims)[3]))
+      for(g in 1:G){
+        # grid = expand.grid(mu_g = seq(min(sims[,g,1])-0.1,max(sims[,g,1])+0.1,length.out=floor(sqrt(dim(sims)[1]))),
+        #                    sigmasqu_g = seq(min(exp(sims[,g,2])),max(exp(sims[,g,2])),length.out=floor(sqrt(dim(sims)[1]))))
+        grid = expand.grid(mu_g = seq(min(sims[,,1])-0.1,max(sims[,,1])+0.1,length.out=floor(sqrt(dim(sims)[1]))),
+                           sigmasqu_g = seq(min(exp(sims[,,2])),max(exp(sims[,,2])),length.out=floor(sqrt(dim(sims)[1]))))
+        dummy_sims[,g,1] = grid$mu_g
+        dummy_sims[,g,2] = log(grid$sigmasqu_g)
+      }
+      # Convert the matrix into a data frame for ggplot
+      dummy_params_f_transform = matrix(reorder_by_lda(scaling,G,dummy_sims)$W,ncol=G)
+      dummy_mat = cbind(dummy_sims[,1:G,1],exp(dummy_sims[,1:G,2]),dummy_params_f_transform)
+      #browser()
+      params_f_transform = cbind(params[,1:G],exp(params[,(G+1):(2*G)]),params[,(2*G+1):(3*G-1)], 
+                                 matrix(reorder_by_lda(scaling,G,sims)$W,ncol=G))
+      params_f_transform = cbind(params_f_transform[1:nrow(dummy_mat),],dummy_mat)
+    } else{
+      params_f_transform = NULL
+    }
+    ### FOR VISUALIZATION ###
+    #browser()
     list(log_zhat_inv_L=lml_thames_marginal$log_zhat_inv_L - log_cor,
          log_zhat_inv=lml_thames_marginal$log_zhat_inv - log_cor,
          log_zhat_inv_U=lml_thames_marginal$log_zhat_inv_U - log_cor,
@@ -708,6 +621,7 @@ compute_thames = function(ellipse,params,lps,G,iters,type,logpost,num_R,seed=202
          alpha=mean(-lps< -limit),
          c_opt=c_opt,
          etas=param_test,
-         graph=graph)
+         graph=graph,
+         params_f_transform = params_f_transform)
   }
 }

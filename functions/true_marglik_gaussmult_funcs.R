@@ -21,7 +21,8 @@ y_theta_sampler_gaussmulti_vii = function(n, nu, alpha_0,
   #browser()
   G = length(alpha_0)
   
-  if(is.null(y)){
+  isnully = is.null(y)
+  if(isnully){
     y = rdata_gaussmulti(n,mustars,taustars,sigmastars,seed=seed)    
   }
   
@@ -38,7 +39,7 @@ y_theta_sampler_gaussmulti_vii = function(n, nu, alpha_0,
   # res=Mclust(y, G=G)
   # res$parameters
   
-  if(is.null(y)){
+  if(isnully){
     (log_marglik = log_true_marglik_gauss_multi_vii(y, nu, lambda, alpha_0, kappa_0, beta, mustars))
   } else{
     log_marglik = 0 # presume truth is unknown if y is known
@@ -306,7 +307,7 @@ p0hat_gaussmulti_vii <- function(y, theta, G) {
                                    function(i) p0hat_i_vii(y, theta[i,], G),
                                    mc.cores = num_use_cores))
   #browser()
-  return(mean(p0hats))
+  return(list(p0hat=mean(p0hats[1,]),Zhat=p0hats[-1,]))
   
 }
 
@@ -322,8 +323,9 @@ p0hat_i_vii  <- function(y, theta, G) {
                                                           sigmas[[g]],log=TRUE)))
   maxlogrows = do.call(pmax, c(as.data.frame(postprob_mat)))
   postprob_mat_normalized = exp(postprob_mat - maxlogrows) / rowSums(exp(postprob_mat - maxlogrows))
+  
   p0estim = mean(sapply(1:G, function(g) prod(1-postprob_mat_normalized[,g])))
-  return(p0estim)
+  return(c(p0estim,apply(postprob_mat_normalized,1,which.max)))
 }
 
 loglik_gmm_gaussmulti_vii <- function(y, theta, G){
@@ -430,10 +432,6 @@ calc_kappa_0 = function(y){
   return(kappa_0)
 }
 
-# calc_lambda = function(y,nu) {
-#   return(diag(ncol(y))*(nu+ncol(y)+1))
-# }
-
 # combines the sampling of y with the gibbs sampling of mu
 y_theta_sampler_gaussmulti = function(n, nu, alpha_0,
                                       mustars,sigmastars,taustars,
@@ -452,8 +450,6 @@ y_theta_sampler_gaussmulti = function(n, nu, alpha_0,
   
   # initialize via Mclust
   Cs_init = Mclust(y, G=G)$classification
-  # res=Mclust(y, G=G)
-  # res$parameters
   
   (log_marglik = log_true_marglik_gauss_multi(y, nu, lambda, alpha_0, kappa_0, beta, mustars))
   tic()
@@ -467,127 +463,6 @@ y_theta_sampler_gaussmulti = function(n, nu, alpha_0,
               alloc_vec=posterior_sample$C_mat,
               name="GIBBS", y=y, truth=log_marglik))
 }
-
-# # combines the sampling of y with the gibbs sampling of mu
-# y_theta_sampler_gaussmulti = function(n, nu, alpha_0,
-#                                       mustars,sigmastars,taustars,
-#                                       init,iters,burn_in = 2000,seed=2024){
-#   #browser()
-#   G = length(alpha_0)
-#   y = rdata_gaussmulti(n,mustars,taustars,sigmastars,seed=seed)
-#   
-#   # choose beta and lambda via the data
-#   beta = calc_beta(y)
-#   lambda = calc_lambda(y,nu)
-#   kappa_0 = calc_kappa_0(y)
-#   
-#   R = ncol(y)
-#   #browser()
-#   
-#   # initialize via Mclust
-#   Cs_init = Mclust(y, G=G)$classification
-#   # res=Mclust(y, G=G)
-#   # res$parameters
-#   
-#   (log_marglik = log_true_marglik_gauss_multi(y, nu, lambda, alpha_0, kappa_0, beta, mustars))
-#   tic()
-#   posterior_sample = gibbs_sampling_gaussmulti(iters+burn_in, Cs_init=Cs_init, y, 
-#                                                alpha_0, kappa_0, nu, lambda, beta ,seed=seed)
-#   toc()
-#   posterior_sample$theta = posterior_sample$theta[-(1:burn_in),,]
-#   posterior_sample$C_mat = posterior_sample$C_mat[-(1:burn_in),]
-#   
-#   return(list(results=posterior_sample$theta,
-#               alloc_vec=posterior_sample$C_mat,
-#               name="GIBBS", y=y, truth=log_marglik))
-# }
-
-# # combines the sampling of y with the gibbs sampling of mu
-# y_theta_sampler_gaussmulti = function(n, nu, alpha_0,
-#                                       mustars,sigmastars,taustars,
-#                                       init,iters,burn_in = 2000,seed=2024){
-#   #browser()
-#   G = length(alpha_0)
-#   y = rdata_gaussmulti(n,mustars,taustars,sigmastars,seed=seed)
-#   
-#   # choose beta and lambda via the data
-#   beta = calc_beta(y)
-#   lambda = calc_lambda(y,nu)
-#   kappa_0 = calc_kappa_0(y)
-#   
-#   R = ncol(y)
-#   #browser()
-#   
-#   # initialize via Mclust
-#   Cs_init = Mclust(y, G=G)$classification
-#   # res=Mclust(y, G=G)
-#   # res$parameters
-#   
-#   (log_marglik = log_true_marglik_gauss_multi(y, nu, lambda, alpha_0, kappa_0, beta, mustars))
-#   tic()
-#   posterior_sample = gibbs_sampling_gaussmulti(iters+burn_in, Cs_init=Cs_init, y, 
-#                                                alpha_0, kappa_0, nu, lambda, beta ,seed=seed)
-#   toc()
-#   posterior_sample$theta = posterior_sample$theta[-(1:burn_in),,]
-#   posterior_sample$C_mat = posterior_sample$C_mat[-(1:burn_in),]
-#   
-#   return(list(results=posterior_sample$theta,
-#               alloc_vec=posterior_sample$C_mat,
-#               name="GIBBS", y=y, truth=log_marglik))
-# }
-
-# rgibbs_C_vec_gaussmulti = function(y,theta_i,sigma_tilde,taus_tilde){
-#   
-#   G=length(theta_i)
-#   R=ncol(y)
-#   n=nrow(y)
-#   
-#   num_cores <- detectCores()
-#   num_use_cores = min(c(num_cores-2,9))
-#   postprob_mat = simplify2array(mclapply(1:G,function(g) log(theta_i[[g]]$pi_g) + 
-#                                            mvtnorm::dmvnorm(y, theta_i[[g]]$mu_g, 
-#                                                             theta_i[[g]]$Sigma_g,log=TRUE),mc.cores = num_use_cores))
-#   
-#   
-#   # tic()
-#   # for(i in 1:20000){
-#   #   maxlogrows1 = apply(postprob_mat,1,max)
-#   # }
-#   # toc()
-#   # 
-#   # 
-#   # tic()
-#   # for(i in 1:20000){
-#   #  maxlogrows2 = do.call(pmax, c(as.data.frame(postprob_mat)))
-#   # }
-#   # toc()
-#   # this one is faster
-#   
-#   # normalize to deal with potential numeric issues
-#   maxlogrows = do.call(pmax, c(as.data.frame(postprob_mat)))
-#   postprob_mat_normalized = exp(postprob_mat - maxlogrows) / rowSums(exp(postprob_mat - maxlogrows))
-#   
-#   # postprobmat_test = t(matrix(c(1/4,2/4,1/4,0/4,3/4,1/4,0/4,0/4),nrow=G))
-#   # linearized sampler from the posterior (works if there are no ties)
-#   
-#   # matrix of cumulative probabilities
-#   postprob_mat_cumul = postprob_mat_normalized + 
-#     matrix(rowSums(simplify2array(
-#       mclapply(1:G,
-#                function(g) c(rep(0,n*g),
-#                              rep(c(postprob_mat_normalized)[(n*(g-1)+1):(n*g)],G-g)), 
-#                mc.cores = num_use_cores))),nrow=n)
-#   
-#   # random draw from the cumulative probabilities
-#   postrob_mat_randomized = matrix(c(runif(n) <= postprob_mat_cumul + 0)*rep(G:1,each=n),nrow=n)
-#   
-#   # taking the argmax (linearized)
-#   C_vec_i = G-do.call(pmax, c(as.data.frame(postrob_mat_randomized)))+1
-#   browser()
-#   #postprobvec = c(2/8,1/8,5/8)
-#   #table(sapply(1:10000000,function(s) which.max(runif(1) <= cumsum(postprobvec))))/10000000
-#   return(C_vec_i)
-# }
 
 # used to determine the hyperparameter beta of the prior
 calc_beta = function(y){
@@ -613,11 +488,6 @@ gibbs_sampling_gaussmulti = function(iters, Cs_init=Cs_init, y,
   
   tic()
   for(i in 2:iters){
-    #tic()
-    # if(i==21){
-    #browser()
-    # }
-    #print(i)
     if(round(i/100)==i/100){
       print(i)
     }
@@ -636,9 +506,6 @@ gibbs_sampling_gaussmulti = function(iters, Cs_init=Cs_init, y,
   theta_i = rgibbs_theta_gaussmulti(y, C_vec, alpha_0, kappa_0, nu, lambda, beta, seed=iters)
   
   theta[iters,,] = t(simplify2array(mclapply(1:G, function(g) c(theta_i[[g]]$mu_g,theta_i[[g]]$Sigma_g[upper.tri(theta_i[[g]]$Sigma_g,diag=TRUE)],theta_i[[g]]$pi_g),mc.cores = num_use_cores)))
-  
-  
-  #0.21*iters/60/60
   toc()
   #browser()
   
@@ -657,9 +524,7 @@ p0hat_gaussmulti <- function(y, theta, G) {
   p0hats = simplify2array(mclapply(1:iters,
                        function(i) p0hat_i(y, theta[i,], G),
                        mc.cores = num_use_cores))
-  #browser()
-  return(mean(p0hats))
-  
+  return(list(p0hat=mean(p0hats[1,]),Zhat=p0hats[-1,]))
 }
 
 p0hat_i  <- function(y, theta, G) {
@@ -681,8 +546,40 @@ p0hat_i  <- function(y, theta, G) {
   maxlogrows = do.call(pmax, c(as.data.frame(postprob_mat)))
   postprob_mat_normalized = exp(postprob_mat - maxlogrows) / rowSums(exp(postprob_mat - maxlogrows))
   p0estim = mean(sapply(1:G, function(g) prod(1-postprob_mat_normalized[,g])))
-  return(p0estim)
+  return(c(p0estim,apply(postprob_mat_normalized,1,which.max)))
 }
+
+# p0hat_gaussmulti_vii <- function(y, theta, G) {
+#   
+#   #browser()
+#   iters = nrow(theta)
+#   
+#   num_cores <- detectCores()
+#   num_use_cores = min(c(num_cores-2,9))
+#   p0hats = simplify2array(mclapply(1:iters,
+#                                    function(i) p0hat_i_vii(y, theta[i,], G),
+#                                    mc.cores = num_use_cores))
+#   #browser()
+#   return(list(p0hat=mean(p0hats[1,]),Zhat=p0hats[-1,]))
+#   
+# }
+# 
+# p0hat_i_vii  <- function(y, theta, G) {
+#   browser()
+#   R = dim(y)[2]
+#   param_list = transform_to_params_vii(theta,G,R)
+#   
+#   sigmas = param_list$sigmas
+#   browser()
+#   postprob_mat = simplify2array(lapply(1:G,function(g) log(param_list$pis[g]) + 
+#                                          mvtnorm::dmvnorm(y, param_list$mus[g,], 
+#                                                           sigmas[[g]],log=TRUE)))
+#   maxlogrows = do.call(pmax, c(as.data.frame(postprob_mat)))
+#   postprob_mat_normalized = exp(postprob_mat - maxlogrows) / rowSums(exp(postprob_mat - maxlogrows))
+#   
+#   p0estim = mean(sapply(1:G, function(g) prod(1-postprob_mat_normalized[,g])))
+#   return(c(p0estim,apply(postprob_mat_normalized,1,which.max)))
+# }
 
 # sampling conditioned on C
 rgibbs_C_vec_gaussmulti = function(y,theta_i,sigma_tilde,taus_tilde,seed){
@@ -828,16 +725,7 @@ prior_sampler_marglik_gaussmulti = function(y, nu, iters, alpha_0, seed=2024){
   # logliks = loglik_gmm_i(y,theta[1,],G,1)
   # toc()
   mc_estim_partial = loglik_gmm_gaussmulti(y,theta,G)
-  
-  #par(mfrow=c(1,1))
-  #plot(100000:iters,(log(cumsum(exp(logliks-min(logliks)))/(1:iters)))[100000:iters]+min(logliks))
-  
-  
-  
-  
-  #abline(h=log_marglik,col="red")
-  
-  # TODO define mc_estim_partial ?
+
   return(mc_estim_partial)
 }
 
@@ -1042,7 +930,8 @@ y_theta_sampler_gaussmulti_transformed = function(n, nu, alpha_0,
                                       init,iters,burn_in = 2000,seed=2024,y=NULL){
   #browser()
   G = length(alpha_0)
-  if(is.null(y)){
+  isnully = is.null(y)
+  if(isnully){
     y = rdata_gaussmulti(n,mustars,taustars,sigmastars,seed=seed)    
   }
   
@@ -1058,7 +947,7 @@ y_theta_sampler_gaussmulti_transformed = function(n, nu, alpha_0,
   Cs_init = Mclust(y, G=G)$classification
   # res=Mclust(y, G=G)
   # res$parameters
-  if(is.null(y)){
+  if(isnully){
     (log_marglik = log_true_marglik_gauss_multi(y, nu, lambda, alpha_0, kappa_0, beta, mustars))
   } else{
     log_marglik = 0 # presume truth is unknown if y is known
@@ -1070,7 +959,7 @@ y_theta_sampler_gaussmulti_transformed = function(n, nu, alpha_0,
   toc()
   posterior_sample$theta = posterior_sample$theta[-(1:burn_in),,]
   posterior_sample$C_mat = posterior_sample$C_mat[-(1:burn_in),]
-  
+  #browser()
   return(list(results=posterior_sample$theta,
               alloc_vec=posterior_sample$C_mat,
               name="GIBBS", y=y, truth=log_marglik))
@@ -1147,7 +1036,7 @@ gibbs_sampling_gaussmulti_transformed = function(iters, Cs_init=Cs_init, y,
   }
   #0.21*iters/60/60
   toc()
-  browser()
+  #browser()
   
   posterior_sample = list(theta=theta,C_mat = C_mat)
   

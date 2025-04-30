@@ -31,6 +31,7 @@ loglik_partial = function(sims,G) loglik_gmm_partial_transform(y,sims,G)
 # pipeline settings
 G_list <- 2:6 # 2 more than in Celeux et al. (2018)
 iters = 5000 # T/2
+num_var_g = 3 # number of variables per component
 RELABEL_ALG_NAMES = c("ECR", "STEPHENS","PRA", 
                       "AIC","SJW") # names from label.switching 
 relabel_algs = c("ECR","STEPHENS")#relabel(relabel_algs[j],sims,n,y,R,m,G,2*iters,z_dummy = z_dummy)
@@ -42,7 +43,7 @@ ellipse_algs = list(standard="standard")
 #                    robust="robust",min_vol="min_vol_60%HPD")  
 
 # options: robust="robust")#,min_vol="min_vol_60%HPD")
-thames_algs = list(simple="simple",permutations="permutations")#,permutations="permutations")
+thames_algs = list(permutations="permutations",simple="simple")#,permutations="permutations")
 # options: standard_pluslogGfac="standard_pluslogGfac",simple="simple")
 samplers = list(jags=function(g, iters, init, seed) sim_jags(n=n,x=y,R2=R^2,m=m,k1=g,
                                                        iters=iters, init=init, seed=seed),
@@ -52,11 +53,37 @@ num_sims=20
 
 results_galaxies = thames_pipeline(num_sims, logposty, loglik_partial, G_list, iters, 
                                    relabel_algs, ellipse_algs, thames_algs,
-                                   samplers,num_R=1,num_var_g = 3) 
+                                   samplers,num_R=1,num_var_g = num_var_g ) 
 # save(results_galaxies,file=paste0('data/res_galaxies','.Rda'))
 write.csv(data.frame(lapply(results_galaxies$df_output,
                             as.character), stringsAsFactors=FALSE),
           file='data/res_galaxies.csv')
+
+# for visualizations
+
+for(g in seq_along(G_list)){
+  df_galaxies = as.data.frame(results_galaxies$Ws[[g]])
+  names(df_galaxies) = c(paste0(rep("mu",G_list[g]),1:G_list[g]),
+                         paste0(rep("sigmasqu",G_list[g]),1:G_list[g]),
+                         paste0(rep("tau",G_list[g]-1),1:(G_list[g]-1)),
+                         paste0(rep("W",G_list[g]),1:G_list[g]),
+                         paste0(rep("muGrid",G_list[g]),1:G_list[g]),
+                         paste0(rep("sigmasquGrid",G_list[g]),1:G_list[g]),
+                         paste0(rep("WGrid",G_list[g]),1:G_list[g]))
+  write.csv(df_galaxies,file=paste0("data/thetaW_galaxies_G",G_list[g],".csv"))
+}
+
+# for(g in seq_along(G_list)){
+#   df_galaxies = as.data.frame(cbind(results_galaxies$sims[[g]][,,1],
+#                                     exp(results_galaxies$sims[[g]][,,2]),
+#                                     results_galaxies$sims[[g]][,,3],
+#                                     results_galaxies$Ws[[60*(g-1)+1]]))
+#   names(df_galaxies) = c(paste0(rep("mu",G_list[g]),1:G_list[g]),
+#                          paste0(rep("sigmasqu",G_list[g]),1:G_list[g]),
+#                          paste0(rep("tau",G_list[g]),1:G_list[g]),
+#                          paste0(rep("W",G_list[g]),1:G_list[g]))
+#   write.csv(df_galaxies,file=paste0("data/thetaW_galaxies_G",G_list[g],".csv"))
+# }
 
 results_galaxies_1sim = thames_pipeline(1, logposty, loglik_partial, 2:15, 50000,
                                    c("ECR"), ellipse_algs, list(simple="simple"),
