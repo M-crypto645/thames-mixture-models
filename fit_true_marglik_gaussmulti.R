@@ -1,8 +1,4 @@
 rm(list=ls())
-#if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
-#  setwd("thames_mixtures")
-#}
-
 library(mvtnorm)
 library(sparsediscrim)
 library(CholWishart)
@@ -14,6 +10,7 @@ library(mclust)
 
 source("functions/pipeline.R")
 source("functions/true_marglik_gaussmult_funcs.R")
+library(thamesmix)
 
 ### BEGIN liver dataset ###
 
@@ -42,7 +39,7 @@ co = rep(0,15)
 margliks = rep(0,15)
 
 results_T10000_G15 = thames_pipeline(num_sims=1,
-                                  logposty=function(thetas, G, y) logposty_gaussmulti_vii(thetas,G,y,nu,rep(alpha_0_constant,G)),
+                                  logposty=function(sims,y) logposty_gaussmulti_vii(sims,y,nu,alpha_0_constant),
                                   p0hat=p0hat_gaussmulti_vii,
                                   loglik_partial=NULL,
                                   G_list=15, iters=iters/2,
@@ -54,17 +51,17 @@ results_T10000_G15 = thames_pipeline(num_sims=1,
                                                                                                                 mustars_func(g),sigmastars_func(g),taustars_func(g),
                                                                                                                 init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 # run to see overlap graph
-# results_T10000_G15 = thames_pipeline(num_sims=1,
-#                                      logposty=function(thetas, G, y) logposty_gaussmulti_vii(thetas,G,y,nu,rep(alpha_0_constant,G)),
-#                                      loglik_partial=NULL,
-#                                      G_list=15, iters=iters/2,
-#                                      relabel_algs = c("ECR"), ellipse_algs = c("standard"),
-#                                      thames_algs = c("simple"),#c(permutations="permutations",simple="simple"),
-#                                      num_R=R,num_var_g=1+2*R,init=function(y) 1, # init is set within the function
-#                                      prior_sampler = function(y, G, iters) prior_sampler_marglik_gaussmulti(y, nu, iters, rep(alpha_0_constant,G)),
-#                                      samplers = list(function(g, iters, init, seed) y_theta_sampler_gaussmulti_vii(n,nu,rep(alpha_0_constant,g),
-#                                                                                                                    mustars_func(g),sigmastars_func(g),taustars_func(g),
-#                                                                                                                    init,2*iters,burn_in=burn_in,seed=seed,y=y)))
+results_T10000_G15 = thames_pipeline(num_sims=1,
+                                     logposty=function(sims, y) logposty_gaussmulti_vii(sims,y,nu,alpha_0_constant),
+                                     loglik_partial=NULL,
+                                     G_list=15, iters=iters/2,
+                                     relabel_algs = c("ECR"), ellipse_algs = c("standard"),
+                                     thames_algs = c("simple"),#c(permutations="permutations",simple="simple"),
+                                     num_R=R,num_var_g=1+2*R,init=function(y) 1, # init is set within the function
+                                     prior_sampler = function(y, G, iters) prior_sampler_marglik_gaussmulti(y, nu, iters, rep(alpha_0_constant,G)),
+                                     samplers = list(function(g, iters, init, seed) y_theta_sampler_gaussmulti_vii(n,nu,rep(alpha_0_constant,g),
+                                                                                                                   mustars_func(g),sigmastars_func(g),taustars_func(g),
+                                                                                                                   init,2*iters,burn_in=burn_in,seed=seed,y=y)))
 
 co[15] = 3 - (15-3)
 #save(results_T10000_G15,file=paste0('data/res_liver_G15_T10000','.Rda'))
@@ -494,6 +491,88 @@ colnames(liver_post_mean) = c("mcv","alkphos","sgpt","sgot","gammagt")
 write.csv(liver_post_mean,"data/liver_post_mean.csv")
 read.csv("data/liver_post_mean.csv")
 
+liver_post_sqrtvar_vec = colMeans(sqrt(exp(results_T10000_G4$thetastars[[1]][1,1,,21:40])))
+liver_post_sqrtvar = as.data.frame(rbind(liver_post_sqrtvar_vec[1:5],
+                                      liver_post_sqrtvar_vec[6:10],
+                                      liver_post_sqrtvar_vec[11:15],
+                                      liver_post_sqrtvar_vec[16:20]))
+colnames(liver_post_sqrtvar) = c("mcv","alkphos","sgpt","sgot","gammagt")
+
+plots = list()
+
+col=1
+dfliver = as.data.frame(liver[,col])
+names(dfliver) = c("mcv")
+ggplot(dfliver,aes(x=mcv)) + 
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "skyblue", color = "black")+
+  geom_function(fun=function(x) mean(results_T10000_G4$thetastars[[1]][1,1,,41])*dnorm(x,mean=liver_post_mean[1,col],sd=liver_post_sqrtvar[1,col])+
+                  mean(results_T10000_G4$thetastars[[1]][1,1,,42])*dnorm(x,mean=liver_post_mean[2,col],sd=liver_post_sqrtvar[2,col])+
+                  mean(results_T10000_G4$thetastars[[1]][1,1,,43])*dnorm(x,mean=liver_post_mean[3,col],sd=liver_post_sqrtvar[3,col])+
+                  mean(1-(results_T10000_G4$thetastars[[1]][1,1,,43]-results_T10000_G4$thetastars[[1]][1,1,,42]-results_T10000_G4$thetastars[[1]][1,1,,41]))*
+                  dnorm(x,mean=liver_post_mean[4,col],sd=liver_post_sqrtvar[4,col]))
+col=2
+dfliver = as.data.frame(liver[,col])
+names(dfliver) = "alkphos"
+ggplot(dfliver,aes(x=alkphos)) + 
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "skyblue", color = "black")+
+  geom_function(fun=function(x) mean(results_T10000_G4$thetastars[[1]][1,1,,41])*dnorm(x,mean=liver_post_mean[1,col],sd=liver_post_sqrtvar[1,col])+
+                  mean(results_T10000_G4$thetastars[[1]][1,1,,42])*dnorm(x,mean=liver_post_mean[2,col],sd=liver_post_sqrtvar[2,col])+
+                  mean(results_T10000_G4$thetastars[[1]][1,1,,43])*dnorm(x,mean=liver_post_mean[3,col],sd=liver_post_sqrtvar[3,col])+
+                  mean(1-(results_T10000_G4$thetastars[[1]][1,1,,43]-results_T10000_G4$thetastars[[1]][1,1,,42]-results_T10000_G4$thetastars[[1]][1,1,,41]))*
+                  dnorm(x,mean=liver_post_mean[4,col],sd=liver_post_sqrtvar[4,col]))
+col=3
+dfliver = as.data.frame(liver[,col])
+names(dfliver) = c("sgpt")
+ggplot(dfliver,aes(x=sgpt)) + 
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "skyblue", color = "black")+
+  geom_function(fun=function(x) mean(results_T10000_G4$thetastars[[1]][1,1,,41])*dnorm(x,mean=liver_post_mean[1,col],sd=liver_post_sqrtvar[1,col])+
+                  mean(results_T10000_G4$thetastars[[1]][1,1,,42])*dnorm(x,mean=liver_post_mean[2,col],sd=liver_post_sqrtvar[2,col])+
+                  mean(results_T10000_G4$thetastars[[1]][1,1,,43])*dnorm(x,mean=liver_post_mean[3,col],sd=liver_post_sqrtvar[3,col])+
+                  mean(1-(results_T10000_G4$thetastars[[1]][1,1,,43]-results_T10000_G4$thetastars[[1]][1,1,,42]-results_T10000_G4$thetastars[[1]][1,1,,41]))*
+                  dnorm(x,mean=liver_post_mean[4,col],sd=liver_post_sqrtvar[4,col]))
+col=4
+dfliver = as.data.frame(liver[,col])
+names(dfliver) = c("sgot")
+ggplot(dfliver,aes(x=sgot)) + 
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "skyblue", color = "black")+
+  geom_function(fun=function(x) mean(results_T10000_G4$thetastars[[1]][1,1,,41])*dnorm(x,mean=liver_post_mean[1,col],sd=liver_post_sqrtvar[1,col])+
+                  mean(results_T10000_G4$thetastars[[1]][1,1,,42])*dnorm(x,mean=liver_post_mean[2,col],sd=liver_post_sqrtvar[2,col])+
+                  mean(results_T10000_G4$thetastars[[1]][1,1,,43])*dnorm(x,mean=liver_post_mean[3,col],sd=liver_post_sqrtvar[3,col])+
+                  mean(1-(results_T10000_G4$thetastars[[1]][1,1,,43]-results_T10000_G4$thetastars[[1]][1,1,,42]-results_T10000_G4$thetastars[[1]][1,1,,41]))*
+                  dnorm(x,mean=liver_post_mean[4,col],sd=liver_post_sqrtvar[4,col]))
+col=5
+dfliver = as.data.frame(liver[,col])
+names(dfliver) = c("gammagt")
+ggplot(dfliver,aes(x=gammagt)) + 
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "skyblue", color = "black")+
+  geom_function(fun=function(x) dnorm(x,mean=liver_post_mean[1,col],sd=liver_post_sqrtvar[1,col]))+
+  geom_function(fun=function(x) dnorm(x,mean=liver_post_mean[2,col],sd=liver_post_sqrtvar[2,col]))+
+  geom_function(fun=function(x) dnorm(x,mean=liver_post_mean[3,col],sd=liver_post_sqrtvar[3,col]))+
+  geom_function(fun=function(x) dnorm(x,mean=liver_post_mean[4,col],sd=liver_post_sqrtvar[4,col]))
+
+pairs(liver[,-c(6,7)])
+library(ggplot2)
+
+# Sample data
+data <- data.frame(x = rnorm(1000, mean = 5, sd = 2))
+
+# Plot
+ggplot(data, aes(x)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "lightblue", color = "black") +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(data$x), sd = sd(data$x)), 
+                color = "red", size = 1) +
+  labs(title = "Histogram with Normal Distribution Curve", x = "x", y = "Density")
+
+
+# mcv     corpuscular volume
+# alkphos alkaline phosphotase
+# sgpt    alanine aminotransferase
+# sgot    aspartate aminotransferase
+# gammagt gamma-glutamyl transpeptidase
+#write.csv(liver_post_mean,"data/liver_post_mean.csv")
+#read.csv("data/liver_post_mean.csv")
+
 liver_post_sd_vec = sqrt(diag(cov(results_T10000_G4$thetastars[[1]][1,1,,1:20])))
 liver_post_sd = as.data.frame(rbind(liver_post_sd_vec[1:5],
                                     liver_post_sd_vec[6:10],
@@ -510,7 +589,7 @@ read.csv("data/liver_post_sd.csv")
 # real values
 n = 345
 G = 15#3#30
-R = 5#6#6#27#6#57
+R = 6#6#27#6#57
 
 # specification of the parameters from which the data is simulated
 dist = 100

@@ -1,10 +1,5 @@
 # Fit the THAMES, fitted to the galaxies, enzyme, and acidity datasets
 rm(list=ls())
-
-#if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
-#  setwd("thames_mixtures")
-#}
-
 library(ggplot2)
 library(gridExtra)
 

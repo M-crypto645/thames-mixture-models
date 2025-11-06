@@ -1,15 +1,13 @@
 # simulate from the Gaussian mixture model with known proportions and variances
 # and compute the marginal likelihood estimators
 rm(list=ls())
-#if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
-#  setwd("thames_mixtures")
-#}
 source("functions/galaxies_funcs_squares.R")
-source("functions/true_marglik_funcs.R")          
-#source("functions/thames_gmm_funcs.R")
+source("functions/true_marglik_funcs.R")
 source("functions/pipeline.R")
 library(reshape2)
 library(combinat)
+library(thamesmix)
+
 
 ### PRETTIER SOLUTION ###
 n = 10
@@ -20,11 +18,11 @@ par(mfrow=c(1,1))
 
 # setting 1: true model (fitted G=2, true G=2)
 results_G2 = thames_pipeline(num_sims=50, 
-                                  logposty= function(thetas, G, y) logposty(thetas, G, y, sigma_tilde=1, taus_tilde=c(1/2,1/2), mus_tilde=c(0,0)), 
+                                  logposty=function(thetas, y) logposty(thetas, y, sigma_tilde=1, taus_tilde=c(1/2,1/2), mus_tilde=c(0,0)), 
                                   loglik_partial=NULL, 
                                   G_list=2, iters=iters/2, 
                                    relabel_algs=c("ECR"), ellipse_algs=c("standard"),
-                                  thames_algs=c(simple="simple",mc="mc",bridge="bridge",standard="standard"),
+                                  thames_algs=c(simple="simple",bridge="bridge",standard="standard"),
                                   num_R=1,num_var_g=1, init=function(y) mean(range(y))*c(1,1),
                                   prior_sampler=function(y, G, iters) prior_sampler_marglik(y=y,mus_tilde=c(0,0), sigma_tilde=1, taus_tilde=c(1/2,1/2), iters=iters),
                                   samplers=list(function(g, iters, init, seed) y_mu_sampler(n=n,mus_tilde=c(0,0), 
@@ -52,11 +50,11 @@ results_G2 = thames_pipeline(num_sims=50,
 
 # setting 2: underfitting (fitted G=2, true G=3)
 results_underfitting = thames_pipeline(num_sims=50, 
-                                  logposty= function(thetas, G, y) logposty(thetas, G, y, sigma_tilde=1, taus_tilde=c(1/2,1/2), mus_tilde=c(0,0)), 
+                                  logposty= function(thetas, y) logposty(thetas, y, sigma_tilde=1, taus_tilde=c(1/2,1/2), mus_tilde=c(0,0)), 
                                   loglik_partial=NULL, 
                                   G_list=2, iters=iters/2, 
                                   relabel_algs=c("ECR"), ellipse_algs=c("standard"),
-                                  thames_algs=c(mc="mc",bridge="bridge",simple="simple",standard="standard"),
+                                  thames_algs=c(simple="simple",bridge="bridge",standard="standard"),
                                   num_R=1,num_var_g=1,init=function(y) mean(range(y))*c(1,1),
                                   prior_sampler=function(y, G, iters) prior_sampler_marglik(y=y,mus_tilde=c(0,0), sigma_tilde=1, taus_tilde=c(1/2,1/2), iters=iters),
                                   samplers=list(function(g, iters, init, seed) y_mu_sampler(n=n,mus_tilde=c(0,0), 
@@ -84,11 +82,11 @@ results_underfitting = thames_pipeline(num_sims=50,
 
 # setting 3: overfitting (fitted G=3, true G=2)
 results_overfitting = thames_pipeline(num_sims=50, 
-                                       logposty= function(thetas, G, y) logposty(thetas, G, y, sigma_tilde=1, taus_tilde=c(1/3,1/3,1/3), mus_tilde=c(0,0,0)), 
+                                       logposty= function(thetas, y) logposty(thetas, y, sigma_tilde=1, taus_tilde=c(1/3,1/3,1/3), mus_tilde=c(0,0,0)), 
                                        loglik_partial=NULL, 
                                        G_list=3, iters=iters/2, 
                                        relabel_algs=c("ECR"), ellipse_algs=c("standard"),
-                                       thames_algs=c(mc="mc",bridge="bridge",simple="simple",standard="standard"),
+                                       thames_algs=c(simple="simple",bridge="bridge",standard="standard"),
                                        num_R=1,num_var_g=1,init=function(y) mean(range(y))*c(1,1,1),
                                        prior_sampler=function(y, G, iters) prior_sampler_marglik(y=y,mus_tilde=c(0,0,0), sigma_tilde=1, taus_tilde=c(1/3,1/3,1/3), iters=iters),
                                        samplers=list(function(g, iters, init, seed) y_mu_sampler(n=n,mus_tilde=c(0,0,0), 
@@ -115,11 +113,11 @@ results_overfitting = thames_pipeline(num_sims=50,
 
 # setting 4: true model (fitted G=3, true G=3)
 results_G3 = thames_pipeline(num_sims=50, 
-                                      logposty= function(thetas, G, y) logposty(thetas, G, y, sigma_tilde=1, taus_tilde=c(1/3,1/3,1/3), mus_tilde=c(0,0,0)), 
+                                      logposty= function(thetas, y) logposty(thetas, y, sigma_tilde=1, taus_tilde=c(1/3,1/3,1/3), mus_tilde=c(0,0,0)), 
                                       loglik_partial=NULL, 
                                       G_list=3, iters=iters/2, 
                                       relabel_algs=c("ECR"), ellipse_algs=c("standard"),
-                                      thames_algs=c(mc="mc",bridge="bridge",simple="simple",standard="standard"),
+                                      thames_algs=c(simple="simple",bridge="bridge",standard="standard"),
                                       num_R=1,num_var_g=1,init=function(y) mean(range(y))*c(1,1,1),
                                       prior_sampler=function(y, G, iters) prior_sampler_marglik(y=y,mus_tilde=c(0,0,0), sigma_tilde=1, taus_tilde=c(1/3,1/3,1/3), iters=iters),
                                       samplers=list(function(g, iters, init, seed) y_mu_sampler(n=n,mus_tilde=c(0,0,0), 

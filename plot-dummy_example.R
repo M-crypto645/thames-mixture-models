@@ -1,12 +1,8 @@
 # simulate from the Gaussian mixture model with known proportions and variances
 # and compute the marginal likelihood estimators
 rm(list=ls())
-# if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
-#   setwd("thames_mixtures")
-# }
 source("functions/galaxies_funcs_squares.R")
-source("functions/true_marglik_funcs.R")          
-#source("functions/thames_gmm_funcs.R")
+source("functions/true_marglik_funcs.R") 
 source("functions/pipeline.R")
 library(reshape2)
 library(combinat)

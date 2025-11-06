@@ -101,14 +101,18 @@ gibbs_sampling_gaussmulti_vii = function(iters, Cs_init=Cs_init, y,
       # }
       #print(i)
       if(round(i/100)==i/100){
+        #browser()
+        #write.csv(C_mat,file="data/C_mat.csv")
         save(C_mat,file="data/C_mat.RData")
         save(theta,file="data/theta.RData")
+        save(C_mat,file="data/C_mat_backup.RData")
+        save(theta,file="data/theta_backup.RData")
         print(i)
       }
       C_vec = C_mat[i-1,]
       theta_i = rgibbs_theta_gaussmulti_vii(y, C_vec, alpha_0, kappa_0, nu, lambda, beta, seed=((seed*iters):((seed+1)*(iters)))[i-1])
       #theta_i = rgibbs_theta_gaussmulti(y, C_vec, alpha_0, kappa_0, nu, lambda, beta, seed=((seed*1000):((seed+1)*(1000)))[i-1])
-      #browser()
+      # browser()
       theta[i-1,,] = t(simplify2array(mclapply(1:G, function(g) c(theta_i[[g]]$mu_g,log(diag(theta_i[[g]]$Sigma_g)),theta_i[[g]]$pi_g),mc.cores = num_use_cores)))
       
       C_vec_i = rgibbs_C_vec_gaussmulti(y,theta_i,sigma_tilde,taus_tilde,seed=i)
@@ -251,25 +255,26 @@ log_true_marglik_gauss_multi_vii = function(y, nu, lambda, alpha_0, kappa_0, bet
   return(log_marglik)
 }
 
-logprior_gmm_gaussmulti_vii <- function(theta, G, nu, lambda, beta, alpha_0, kappa_0) {
+logprior_gmm_gaussmulti_vii <- function(sims, nu, lambda, beta, alpha_0, kappa_0) {
   
   #browser()
-  iters = nrow(theta)
+  iters = dim(sims)[1]
+  G = dim(sims)[2]
   
   num_cores <- detectCores()
   num_use_cores = min(c(num_cores-2,9))
   logpriors = mclapply(1:iters,
-                       function(i) logprior_gmm_i_gaussmulti_vii(theta[i,], G, nu, lambda, beta, alpha_0, kappa_0),
+                       function(i) logprior_gmm_i_gaussmulti_vii(sims[i,,], nu, lambda, beta, alpha_0, kappa_0),
                        mc.cores = num_use_cores)
   return(simplify2array(logpriors))
   
 }
 
-logprior_gmm_i_gaussmulti_vii <- function(theta, G, nu, lambda, beta, alpha_0, kappa_0) {
+logprior_gmm_i_gaussmulti_vii <- function(sim, nu, lambda, beta, alpha_0, kappa_0) {
   browser()
-  R = length(beta)
+  d = length(beta)
   
-  param_list = transform_to_params_vii(theta,G,R)
+  param_list = transform_to_params_vii(sim,d)
   
   pis = param_list$pis
   mus = param_list$mus
@@ -296,25 +301,26 @@ logprior_gmm_i_gaussmulti_vii <- function(theta, G, nu, lambda, beta, alpha_0, k
   
 }
 
-p0hat_gaussmulti_vii <- function(y, theta, G) {
+p0hat_gaussmulti_vii <- function(y, sims) {
   
-  #browser()
-  iters = nrow(theta)
+  browser()
+  iters = dim(sims)[1]
+  G = dim(sims)[2]
   
   num_cores <- detectCores()
   num_use_cores = min(c(num_cores-2,9))
   p0hats = simplify2array(mclapply(1:iters,
-                                   function(i) p0hat_i_vii(y, theta[i,], G),
+                                   function(i) p0hat_i_vii(y, sims[i,,], G),
                                    mc.cores = num_use_cores))
   #browser()
   return(list(p0hat=mean(p0hats[1,]),Zhat=p0hats[-1,]))
   
 }
 
-p0hat_i_vii  <- function(y, theta, G) {
+p0hat_i_vii  <- function(y, sim, G) {
   browser()
-  R = dim(y)[2]
-  param_list = transform_to_params_vii(theta,G,R)
+  d = dim(y)[2]
+  param_list = transform_to_params_vii(sim,d)
   
   sigmas = param_list$sigmas
   browser()
@@ -328,16 +334,17 @@ p0hat_i_vii  <- function(y, theta, G) {
   return(c(p0estim,apply(postprob_mat_normalized,1,which.max)))
 }
 
-loglik_gmm_gaussmulti_vii <- function(y, theta, G){
+loglik_gmm_gaussmulti_vii <- function(y, sims){
   #browser()
-  iters = nrow(theta)
+  iters = dim(sims)[1]
+  G = dim(sims)[2]
   
   num_cores <- detectCores()
   num_use_cores = min(c(num_cores-2,9))
   logliks = mclapply(1:iters,
-                     function(i) loglik_gmm_i_gaussmulti_vii(y, theta[i,], G),
+                     function(i) loglik_gmm_i_gaussmulti_vii(y, sims[i,,]),
                      mc.cores = num_use_cores)
-  return(simplify2array(logliks ))
+  return(simplify2array(logliks))
 }
 
 transform_to_matrix_vii = function(uppertri,R){
@@ -348,35 +355,35 @@ transform_to_matrix_vii = function(uppertri,R){
   return(A)
 }
 
-transform_to_params_vii = function(theta,G,R){
-  
+transform_to_params_vii = function(sim, d){
+  #browser()
   index = 0
-  mus = t(matrix(theta[(index+1):(index+R*G)], R, G))
-  index = index+R*G
-  
+  mus = sim[,(index+1):(index+d)]
+  index = index+d
   num_cores <- detectCores()
   num_use_cores = min(c(num_cores-2,9))
   
   sigmas = mclapply(1:G, 
-                    function(g) diag(exp(theta[(index+1+(g-1)*R):(index+g*R)])),
+                    function(g) diag(exp(sim[g,(index+1):(index+d)])),
                     mc.cores = num_use_cores )
   
-  index = index + R*G
+  index = index + d
   
-  pis = theta[(length(theta)-G+1):length(theta)]
+  pis = sim[,index+1]
   
   return(list(mus=mus,sigmas=sigmas,pis=pis))
 }
 
 # ASSUMING SIGMA IS THE ACTUAL COVARIANCE MATRIX (NOT ITS INVERSE)
-loglik_gmm_i_gaussmulti_vii <- function(y, theta, G) {
+loglik_gmm_i_gaussmulti_vii <- function(y, sim) {
   
   #print("likelihood function: start")
   browser()
+  G = nrow(sim)
   n = dim(y)[1]
-  R = dim(y)[2]
+  d = dim(y)[2]
   
-  param_list = transform_to_params_vii(theta,G,R)
+  param_list = transform_to_params_vii(sim, d)
   
   pis = param_list$pis
   mus = param_list$mus
@@ -392,16 +399,17 @@ loglik_gmm_i_gaussmulti_vii <- function(y, theta, G) {
 }
 
 
-logposty_gaussmulti_vii = function(thetas, G, y, nu, alpha_0, kappa_0){
+logposty_gaussmulti_vii = function(sims,y,nu,alpha_0_constant){
   #browser()
+  G = dim(sims)[2]
+  alpha_0 = rep(alpha_0_constant,G)
+  
   beta = calc_beta(y)
   lambda = calc_lambda_vii(y,nu,G)
   kappa_0 = calc_kappa_0(y)
   
-  iters = nrow(thetas)
-  
-  logliks  = loglik_gmm_gaussmulti_vii(y,thetas,G)
-  logpriors = logprior_gmm_gaussmulti_vii(thetas, G, nu, lambda, beta, alpha_0, kappa_0) 
+  logliks  = loglik_gmm_gaussmulti_vii(y,sims)
+  logpriors = logprior_gmm_gaussmulti_vii(sims, nu, lambda, beta, alpha_0, kappa_0) 
   return(logliks + logpriors)
 }
 
@@ -842,7 +850,7 @@ logprior_gmm_i_gaussmulti <- function(theta, G, nu, lambda, beta, alpha_0, kappa
 }
 
 loglik_gmm_gaussmulti <- function(y, theta, G){
-  #browser()
+  browser()
   iters = nrow(theta)
   
   num_cores <- detectCores()

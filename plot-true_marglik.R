@@ -1,9 +1,6 @@
 # simulate from the Gaussian mixture model with known proportions and variances
 # and compute the marginal likelihood estimators
 rm(list=ls())
-# if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
-#   setwd("thames_mixtures")
-# }
 library(ggplot2)
 library(reshape2)
 source("functions/theme.R")

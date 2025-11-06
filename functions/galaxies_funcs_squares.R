@@ -4,11 +4,17 @@ library(invgamma,LaplacesDemon)
 
 # functions to calculate gaussian mixture model unnormalized log posterior
 # (now vectorized)
-loglik_gmm <- function(y,theta,G){
+loglik_gmm <- function(y,sims,G){
   #browser()
-  mus <- theta[,1:G]
-  sigma_squs <- theta[,(G+1):(2*G)]
-  pis <- theta[,(2*G+1):(3*G)]
+  
+  # TODO PUT BACK
+  #mus <- theta[,1:G]
+  #sigma_squs <- theta[,(G+1):(2*G)]
+  #pis <- theta[,(2*G+1):(3*G)]
+  
+  mus = sims[,,1]
+  sigma_squs = sims[,,2]
+  pis = sims[,,3]
   
   log_single_y = Vectorize(function(x) 
     log(rowSums(sapply(1:G, 
@@ -63,35 +69,40 @@ loglik_gmm_partial_transform <- function(y,sims,G){
 
 # lp_gmm(y,theta,G,m,R)
 
-lp_gmm_marginal <- function(y,theta,G,m,R){
-  #browser()
-  
-  mus <- theta[,1:G]
-  sigma_squs <- theta[,(G+1):(2*G)]
-  pis <- theta[,(2*G+1):(3*G)]
-  
-  # set to 0 outside of support
-  if(G>2){
-    mask = (((pis > 0) & (rowSums(pis[,1:(G-1)])<=1)) & (sigma_squs>0))
-  }else{
-    mask = (((pis > 0) & (pis[,1]<=1)) & (sigma_squs>0))
-  }
-  
-  l_total = loglik_gmm(y,theta,G)+logprior_gmm_marginal(theta,G,m,R)
-  l_total[exp(rowSums(log(mask)))==0] = -Inf
-  return(l_total)
-}
+# lp_gmm_marginal <- function(y,theta,G,m,R){
+#   #browser()
+#   
+#   mus <- theta[,1:G]
+#   sigma_squs <- theta[,(G+1):(2*G)]
+#   pis <- theta[,(2*G+1):(3*G)]
+#   
+#   # set to 0 outside of support
+#   if(G>2){
+#     mask = (((pis > 0) & (rowSums(pis[,1:(G-1)])<=1)) & (sigma_squs>0))
+#   }else{
+#     mask = (((pis > 0) & (pis[,1]<=1)) & (sigma_squs>0))
+#   }
+#   
+#   l_total = loglik_gmm(y,theta,G)+logprior_gmm_marginal(theta,G,m,R)
+#   l_total[exp(rowSums(log(mask)))==0] = -Inf
+#   return(l_total)
+# }
 
-lp_gmm_marginal_transform <- function(y,theta,G,m,R){
+lp_gmm_marginal_transform <- function(y,sims,m,R){
   #browser()
-  
-  mus <- theta[,1:G]
+  G = dim(sims)[2]
+  # mus <- theta[,1:G] TODO PUT BACK
+  mus = sims[,1:G,1]
   
   # apply exp transform
-  theta[,(G+1):(2*G)] = exp(theta[,(G+1):(2*G)])
+  # theta[,(G+1):(2*G)] = exp(theta[,(G+1):(2*G)]) TODO PUT BACK
+  sims[,1:G,2] = exp(sims[,1:G,2])
   
-  sigma_squs <- theta[,(G+1):(2*G)]
-  pis <- theta[,(2*G+1):(3*G)]
+  # sigma_squs <- theta[,(G+1):(2*G)] TODO PUT BACK
+  sigma_squs = sims[,1:G,2]
+  
+  # pis <- theta[,(2*G+1):(3*G)] TODO PUT BACK
+  pis = sims[,1:G,3]
   
   # set to 0 outside of support
   if(G>2){
@@ -103,7 +114,7 @@ lp_gmm_marginal_transform <- function(y,theta,G,m,R){
   # adjust for log tranform
   jacobian = rowSums(log(sigma_squs))
     
-  l_total = loglik_gmm(y,theta,G)+logprior_gmm_marginal(theta,G,m,R)+jacobian
+  l_total = loglik_gmm(y,sims,G)+logprior_gmm_marginal(sims,G,m,R)+jacobian
   l_total[exp(rowSums(log(mask)))==0] = -Inf
   # browser()
   return(l_total)
@@ -127,10 +138,17 @@ lp_gmm_marginal_transform <- function(y,theta,G,m,R){
 # }
 
 # log of the prior of the marginal distribution of pi,mu,sigma_squ (now vectorized)
-logprior_gmm_marginal <- function(theta,G,m,R) {
-  mus <- theta[,1:G]
-  sigma_squs <- theta[,(G+1):(2*G)]
-  pis <- theta[,(2*G+1):(3*G)]
+logprior_gmm_marginal <- function(sims,G,m,R) {
+  #browser()
+  
+  # TODO PUT BACK
+  #mus <- theta[,1:G]
+  #sigma_squs <- theta[,(G+1):(2*G)]
+  #pis <- theta[,(2*G+1):(3*G)]
+  
+  mus = sims[,,1]
+  sigma_squs = sims[,,2]
+  pis = sims[,,3]
   
   l_mus <- rowSums(sapply(1:G, function(g) dnorm(mus[,g], mean = m, sd = R, log = TRUE)))
   l_pis <- LaplacesDemon::ddirichlet(1:G/G, rep(1,G),log=TRUE) # constant wrt pis

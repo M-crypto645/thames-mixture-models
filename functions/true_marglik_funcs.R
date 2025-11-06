@@ -136,12 +136,18 @@ y_mu_sampler = function(n,mus_tilde,sigma_tilde,taus_tilde,
               name=name, y=y, truth=log_true_marglik_G2))
 }
 
-logposty = function(thetas, G, y, sigma_tilde, taus_tilde, mus_tilde){
+logposty = function(sims, y, sigma_tilde, taus_tilde, mus_tilde){
   #browser()
+  iters = dim(sims)[1]
+  G = dim(sims)[2]
+  thetas = array(dim=c(dim(sims)[1:2],3))
+  thetas[,,1] = sims[,,1]
+  thetas[,,2] = matrix(sigma_tilde,nrow=iters,ncol=G)
+  thetas[,,3] = matrix(sapply(1:G,function(g) rep(taus_tilde[g],iters)),ncol=G)
+  
   iters = nrow(thetas)
-  logliks = loglik_gmm(y,theta=cbind(thetas,matrix(sigma_tilde,nrow=iters,ncol=G),
-                                     matrix(sapply(1:G,function(g) rep(taus_tilde[g],iters)),ncol=G)),G=G)
-  logpriors = rowSums(sapply(1:G, function(g) dnorm(thetas[,g], mean = mus_tilde[g], log = TRUE)))
+  logliks = loglik_gmm(y,sims=thetas,G=G)
+  logpriors = rowSums(sapply(1:G, function(g) dnorm(thetas[,g,1], mean = mus_tilde[g], log = TRUE)))
   return(logliks + logpriors)
 }
 

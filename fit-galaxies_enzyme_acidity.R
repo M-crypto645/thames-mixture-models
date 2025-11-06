@@ -1,14 +1,9 @@
 # Fit the THAMES to the galaxies, enzyme, and acidity datasets
 rm(list=ls())
-#source('galaxies_funcs_squares.R')
 source('functions/galaxies_funcs_squares.R')
 source('functions/pipeline.R')
-#source('functions/thames_gmm.R')
-#source("functions/thames_gmm_funcs.R")
 pacman::p_load(rstan,label.switching,combinat)
-#options(mc.cores = parallel::detectCores())
-# remove.packages("dplyr")
-# install.packages("dplyr",dependencies=TRUE)
+library(thamesmix)
 library(multimode)
 
 ### GALAXIES ###
@@ -25,7 +20,7 @@ R <- diff(range(y))
 m <- mean(range(y))
 
 # unnormalized log-posterior density
-logposty = function(theta,G,y) lp_gmm_marginal_transform(y,theta,G,m,R)
+logposty = function(sims,y) lp_gmm_marginal_transform(y,sims,m,R)
 loglik_partial = function(sims,G) loglik_gmm_partial_transform(y,sims,G)
 
 # pipeline settings
@@ -49,15 +44,21 @@ samplers = list(jags=function(g, iters, init, seed) sim_jags(n=n,x=y,R2=R^2,m=m,
                                                        iters=iters, init=init, seed=seed),
                 stan=function(g, iters, init, seed) sim_stan(n,y,R,m,g,iters,init,seed))
 num_sims=20
-#num_sims = 20
 
 results_galaxies = thames_pipeline(num_sims, logposty, loglik_partial, G_list, iters, 
                                    relabel_algs, ellipse_algs, thames_algs,
-                                   samplers,num_R=1,num_var_g = num_var_g ) 
+                                   samplers,num_R=1,num_var_g = num_var_g) 
 # save(results_galaxies,file=paste0('data/res_galaxies','.Rda'))
 write.csv(data.frame(lapply(results_galaxies$df_output,
                             as.character), stringsAsFactors=FALSE),
           file='data/res_galaxies.csv')
+
+# average number of times the exact evaluation and the approximation differed 
+sapply(2:6,function(g) mean((results_galaxies$df_output[(results_galaxies$df_output$G==g)&(results_galaxies$df_output$thamesalg=="permutations")&(results_galaxies$df_output$estimate=="estim"),]$value-results_galaxies$df_output[(results_galaxies$df_output$G==g)&(results_galaxies$df_output$thamesalg=="simple")&(results_galaxies$df_output$estimate=="estim"),]$value)[!is.na(results_galaxies$df_output[(results_galaxies$df_output$G==g)&(results_galaxies$df_output$thamesalg=="permutations")&(results_galaxies$df_output$estimate=="estim"),]$value-results_galaxies$df_output[(results_galaxies$df_output$G==g)&(results_galaxies$df_output$thamesalg=="simple")&(results_galaxies$df_output$estimate=="estim"),]$value)]==0))
+# average size of the error
+sapply(2:6,function(g) mean(abs(results_galaxies$df_output[(results_galaxies$df_output$G==g)&(results_galaxies$df_output$thamesalg=="permutations")&(results_galaxies$df_output$estimate=="estim"),]$value-results_galaxies$df_output[(results_galaxies$df_output$G==g)&(results_galaxies$df_output$thamesalg=="simple")&(results_galaxies$df_output$estimate=="estim"),]$value)[!is.na(results_galaxies$df_output[(results_galaxies$df_output$G==g)&(results_galaxies$df_output$thamesalg=="permutations")&(results_galaxies$df_output$estimate=="estim"),]$value-results_galaxies$df_output[(results_galaxies$df_output$G==g)&(results_galaxies$df_output$thamesalg=="simple")&(results_galaxies$df_output$estimate=="estim"),]$value)]))
+# maximum size of the error
+sapply(2:6,function(g) max(abs(results_galaxies$df_output[(results_galaxies$df_output$G==g)&(results_galaxies$df_output$thamesalg=="permutations")&(results_galaxies$df_output$estimate=="estim"),]$value-results_galaxies$df_output[(results_galaxies$df_output$G==g)&(results_galaxies$df_output$thamesalg=="simple")&(results_galaxies$df_output$estimate=="estim"),]$value)[!is.na(results_galaxies$df_output[(results_galaxies$df_output$G==g)&(results_galaxies$df_output$thamesalg=="permutations")&(results_galaxies$df_output$estimate=="estim"),]$value-results_galaxies$df_output[(results_galaxies$df_output$G==g)&(results_galaxies$df_output$thamesalg=="simple")&(results_galaxies$df_output$estimate=="estim"),]$value)]))
 
 # for visualizations
 
@@ -102,8 +103,7 @@ df_1sim[df_1sim$estimate=="estim",]$value
 graphs = results_galaxies_1sim$graphs
 save(graphs,file=paste0('data/res_galaxies_1sim_graphs','.Rda'))
 load(paste0('data/res_galaxies_1sim_graphs','.Rda'))
-co = sapply(seq_along(graphs),function(s) sum(V(graphs[[s]])$color == "blue") - sum(V(graphs[[s]])$color == "red"))
-co
+co = results_galaxies_1sim$co
 #load(file=paste0('data/res_galaxies','.Rda'))
 
 ### GALAXIES ###
@@ -123,7 +123,7 @@ R <- diff(range(y))
 m <- mean(range(y))
 
 # unnormalized log-posterior density
-logposty = function(theta,G,y) lp_gmm_marginal_transform(y,theta,G,m,R)
+logposty = function(sims,y) lp_gmm_marginal_transform(y,sims,m,R)
 loglik_partial = function(sims,G) loglik_gmm_partial_transform(y,sims,G)
 
 # old options
@@ -154,7 +154,7 @@ R <- diff(range(y))
 m <- mean(range(y))
 
 # unnormalized log-posterior density
-logposty = function(theta,G,y) lp_gmm_marginal_transform(y,theta,G,m,R)
+logposty = function(sims,y) lp_gmm_marginal_transform(y,sims,m,R)
 loglik_partial = function(sims,G) loglik_gmm_partial_transform(y,sims,G)
 
 source('functions/galaxies_funcs_squares.R')

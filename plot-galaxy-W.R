@@ -1,18 +1,9 @@
 # Fit the THAMES to the galaxies, enzyme, and acidity datasets
 rm(list=ls())
-# if(strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]!="thames_mixtures"){
-#   setwd("thames_mixtures")
-# }
-#source('galaxies_funcs_squares.R')
 source('functions/galaxies_funcs_squares.R')
 source('functions/pipeline.R')
 source("functions/theme.R")
-#source('functions/thames_gmm.R')
-#source("functions/thames_gmm_funcs.R")
 pacman::p_load(rstan,label.switching,combinat)
-#options(mc.cores = parallel::detectCores())
-# remove.packages("dplyr")
-# install.packages("dplyr",dependencies=TRUE)
 library(multimode)
 library(ggplot2)
 library(gridExtra)
